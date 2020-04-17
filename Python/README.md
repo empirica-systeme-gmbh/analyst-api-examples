@@ -46,5 +46,12 @@ Required local files:
 - `Adressen_Demo.csv`
 - `analystApi.login`
 
-analystApi_csv Adressen_Demo.csv --testonepercent 
- POO-2321S, Brunsstr. 31, 72074 Tübingen => 7055099 OK
+Then, in the folder `Python` where the `setup.py` is located, execute the command
+
+```shell
+analystApi_csv Adressen_Demo.csv --testonepercent
+```
+The output will look like this
+> POO-2321S, Brunsstr. 31, 72074 Tübingen => 7055099 OK
+
+and a new file `Adressen_Demo_executed.csv` will be created containing the results.
