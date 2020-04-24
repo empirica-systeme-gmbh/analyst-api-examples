@@ -64,14 +64,14 @@ include_unknown = False
 ```
 
 
-Filter settings:
+Filter settings
 ----
 
 - Filter variables are defined by column names in the header, filter values by column values
   - To add `min` or `max` values for a variable, use "variable::von" in header for `min` and "variable::bis" for `max`
   - To add `true` or `false` values for a boolean variable use: "variable::includeTRUE", "variable::includeFALSE" or "variable::includeUNKNOWN" with (with "1" or "true" or TRUE as column value) 
 
-Special Filter:
+Special Filters
 ---- 
 - Adresse: define the center of periphery search use header `Adresse`
   - define default distance of periphery search use header `Adresse::distance`
@@ -82,7 +82,7 @@ Special Filter:
 Unvalid filter settings are ignored
 
 
-Get Results:
+Get Results
 ----
 Then, in the folder `Python` where the `setup.py` is located, execute the command
 
@@ -92,7 +92,7 @@ analystApi_csv filename.csv --testonepercent
 The results of your query are stored in "filename_executed.csv"
 
 
-Interpretation of result columns:
+Interpretation of result columns
 ----
 
 - /count in results is NULL --> address could not been found
@@ -100,7 +100,7 @@ Interpretation of result columns:
 
 
 
-Example:
+Example
 ----
 Executing the command
 
