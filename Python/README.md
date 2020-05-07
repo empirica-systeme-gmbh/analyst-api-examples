@@ -11,6 +11,8 @@ will materialize the given parameters and return the results.
 
 `csv_transform` is the csv-approach in using this class. It takes CSV-Files and calls the api for each line, adding new information on its way.
 
+There is also a [Swagger documentation of the API](https://api-stage.empirica-systeme.de/api-docs/#/Queries/createQuery)
+
 
 Installation / Build
 ----
@@ -95,8 +97,9 @@ The results of your query are stored in "filename_executed.csv"
 Interpretation of result columns
 ----
 
-- /count in results is NULL --> address could not been found
-- /count in result is 0 --> address have been found, but no matching cases in radius (check filter settings or max distance)
+- `count` in results is NULL --> address could not been found
+- `count` in result is 0 --> address have been found, but no matching cases in radius (check filter settings or max distance)
+- `query` contains the query string that was sent using the [API](https://api-stage.empirica-systeme.de/api-docs/#/Queries/createQuery)
 
 
 
