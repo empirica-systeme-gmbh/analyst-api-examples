@@ -77,12 +77,13 @@ Special Filters
 ---- 
 - Adresse: define the center of periphery search use header `Adresse`
   - define default distance of periphery search use header `Adresse::distance`
-  - define max distance for "maximum distance minimum count approach" use header `Adresse::maxdistance`
-  - define min count for "maximum distance minimum count approach" use header `Adresse::mincount`
+  - define max distance for "*maximum distance minimum count approach*" use header `Adresse::maxdistance`
+  - define min count for "*maximum distance minimum count approach*" use header `Adresse::mincount`
 - Segment: define the segment to query (e.g. `WHG_K` = flats for purchase)
 
-Unvalid filter settings are ignored
+The "*maximum distance minimum count approach*" will increase the query distance until there are at least `mincount` results or until `maxdistance` is reached, whatever happens first. This way only one query is required instead of repeatedly submitting queries with increasing distance until `mincount` is reached.
 
+Unvalid filter settings are ignored
 
 Get Results
 ----
