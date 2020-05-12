@@ -39,7 +39,7 @@ class immobrain_search_query:
     @staticmethod
     def load_variable_documentation():
         immobrain_search_query.column_documentation = {}
-        r = immobrain_search_query.session.get(endpoint+'/vars/',
+        r = immobrain_search_query.session.get(endpoint + '/vars/',
                                                auth=(username, password),
                                                headers=json_headers)
         r.encoding = 'utf-8'
@@ -77,7 +77,7 @@ class immobrain_search_query:
             return None
 
     def generate_id(self):
-        r = immobrain_search_query.session.post(endpoint+'/queries',
+        r = immobrain_search_query.session.post(endpoint + '/queries',
                                                 auth=(username, password),
                                                 data=json.dumps(self.to_query()),
                                                 headers=json_headers)
@@ -90,7 +90,7 @@ class immobrain_search_query:
         self.pull_details_for_query()
 
     def pull_details_for_query(self):
-        r = immobrain_search_query.session.get(endpoint+'/queries/%s' % (self.id,),
+        r = immobrain_search_query.session.get(endpoint + '/queries/%s' % (self.id,),
                                                auth=(username, password),
                                                headers=json_headers)
         r.encoding = 'utf-8'
@@ -103,13 +103,13 @@ class immobrain_search_query:
         if not self.id:
             self.generate_id()
         logging.info("Querying: %s" % (self.id))
-        r = immobrain_search_query.session.get(endpoint+'/results/%s/%s' % (self.id, type),
+        r = immobrain_search_query.session.get(endpoint + '/results/%s/%s' % (self.id, type),
                                                auth=(username, password),
                                                headers=json_headers)
         r.encoding = 'utf-8'
         if r.status_code < 300:
             if not 'value' in json.loads(r.text):
-                raise Exception("There is no Reply-Value for %s/%s"%(self.id, type ))
+                raise Exception("There is no Reply-Value for %s/%s" % (self.id, type))
             self.data[type] = json.loads(r.text)['value']
         else:
             if not self.meta_data:
@@ -118,7 +118,7 @@ class immobrain_search_query:
                 self.generate_id()
                 logging.info("New Query-ID = %s" % (self.id))
                 self.collect(type)
-            #raise Exception(self.data)
+            # raise Exception(self.data)
 
     def to_query(self):
         doc = {}
@@ -228,7 +228,8 @@ class immobrain_filter:
         return False
 
     def set_special_key(self, key, value):
-        key = [correctly_spelled_key for correctly_spelled_key in self.known_special_keys if correctly_spelled_key.lower()
+        key = \
+        [correctly_spelled_key for correctly_spelled_key in self.known_special_keys if correctly_spelled_key.lower()
          == key.lower()][0]
         self.special_keys[key] = value
 
@@ -270,14 +271,14 @@ class BooleanFilter(immobrain_filter):
     def __init__(self, column_name):
         self.column_name = column_name
         self.ternary_logic = False
-        #if column_name[-1] == '3':
+        # if column_name[-1] == '3':
         #    self.ternary_logic = True
         #    logging.info("%s is ternary"%( self.column_name ) ) 
         self.name = 'yesNoFilters'
         self.unique = False
         self.value = None
         self.known_special_keys = ["includeTrue", "includeFalse", "includeUnknown"]
-        self.special_keys = {"includeUnknown": include_unknown_default }  # default
+        self.special_keys = {"includeUnknown": include_unknown_default}  # default
 
     def to_bool(self, value):
         """ Mimmic Java.lang.boolean """
@@ -336,14 +337,15 @@ class rangeFilter(immobrain_filter):
             "var": self.filter_name,
             "includeUnknown": include_unknown_default
         }
-        if (self.min!=None and self.max!=None) and ( float(self.min) > float(self.max) ) :
-            raise Exception("%s has min bigger than max!"%( self.filter_name ))
+        if (self.min != None and self.max != None) and (float(self.min) > float(self.max)):
+            raise Exception("%s has min bigger than max!" % (self.filter_name))
         if self.min != None:
             doc["minValue"] = self.min
         if self.max != None:
             doc["maxValue"] = self.max
 
         return doc
+
 
 class timePeriodFilter(immobrain_filter):
     def __init__(self, column_name):
@@ -371,7 +373,6 @@ class timePeriodFilter(immobrain_filter):
         return doc
 
 
-
 class peripherySpatialFilter(immobrain_filter):
     def __init__(self, column_name):
         super().__init__()
@@ -395,7 +396,7 @@ class peripherySpatialFilter(immobrain_filter):
 
     def get_position(self):
         logging.debug("Pulling Position for %s" % (self.adresse,))
-        r = immobrain_search_query.session.get(endpoint+'/georef',
+        r = immobrain_search_query.session.get(endpoint + '/georef',
                                                auth=(username, password),
                                                params={"address": self.adresse},
                                                headers=json_headers)
@@ -409,7 +410,7 @@ class peripherySpatialFilter(immobrain_filter):
             self.biggerArea = response["biggerArea"]
 
         except Exception as e:
-            raise(e)
+            raise (e)
 
     def to_query(self):
 
