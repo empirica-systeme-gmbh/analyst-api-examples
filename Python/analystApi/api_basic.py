@@ -40,8 +40,9 @@ class immobrain_search_query:
     def load_variable_documentation():
         immobrain_search_query.column_documentation = {}
         r = immobrain_search_query.session.get(endpoint+'/vars/',
-                         auth=(username, password),
-                         headers=json_headers)
+                                               auth=(username, password),
+                                               headers=json_headers)
+        r.encoding = 'utf-8'
         if r.status_code >= 300:
             raise Exception(json.loads(r.text)['error'])
         # Iterate over every possible variable
@@ -77,9 +78,10 @@ class immobrain_search_query:
 
     def generate_id(self):
         r = immobrain_search_query.session.post(endpoint+'/queries',
-                          auth=(username, password),
-                          data=json.dumps(self.to_query()),
-                          headers=json_headers)
+                                                auth=(username, password),
+                                                data=json.dumps(self.to_query()),
+                                                headers=json_headers)
+        r.encoding = 'utf-8'
         logging.debug(r.text)
         self.meta_data = json.loads(r.text)
         if r.status_code >= 400:
@@ -89,8 +91,9 @@ class immobrain_search_query:
 
     def pull_details_for_query(self):
         r = immobrain_search_query.session.get(endpoint+'/queries/%s' % (self.id,),
-                         auth=(username, password),
-                         headers=json_headers)
+                                               auth=(username, password),
+                                               headers=json_headers)
+        r.encoding = 'utf-8'
         logging.debug(r.text)
         self.details = json.loads(r.text)
         if r.status_code >= 400:
@@ -101,11 +104,12 @@ class immobrain_search_query:
             self.generate_id()
         logging.info("Querying: %s" % (self.id))
         r = immobrain_search_query.session.get(endpoint+'/results/%s/%s' % (self.id, type),
-                         auth=(username, password),
-                         headers=json_headers)
+                                               auth=(username, password),
+                                               headers=json_headers)
+        r.encoding = 'utf-8'
         if r.status_code < 300:
             if not 'value' in json.loads(r.text):
-               raise Exception("There is no Reply-Value for %s/%s"%(self.id, type ))
+                raise Exception("There is no Reply-Value for %s/%s"%(self.id, type ))
             self.data[type] = json.loads(r.text)['value']
         else:
             if not self.meta_data:
@@ -179,6 +183,7 @@ class immobrain_search_query:
 
 
 def clean_response(response):
+    response.encoding = 'utf-8'
     body_as_json = json.loads(response.text)
     if response.status_code < 300:
         return body_as_json
@@ -224,7 +229,7 @@ class immobrain_filter:
 
     def set_special_key(self, key, value):
         key = [correctly_spelled_key for correctly_spelled_key in self.known_special_keys if correctly_spelled_key.lower()
-               == key.lower()][0]
+         == key.lower()][0]
         self.special_keys[key] = value
 
 
@@ -391,9 +396,9 @@ class peripherySpatialFilter(immobrain_filter):
     def get_position(self):
         logging.debug("Pulling Position for %s" % (self.adresse,))
         r = immobrain_search_query.session.get(endpoint+'/georef',
-                         auth=(username, password),
-                         params={"address": self.adresse},
-                         headers=json_headers)
+                                               auth=(username, password),
+                                               params={"address": self.adresse},
+                                               headers=json_headers)
         try:
             response = clean_response(r)
 
