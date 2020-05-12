@@ -20,6 +20,7 @@ json_headers = {
 
 class immobrain_search_query:
     column_documentation = {}
+    session = requests.Session()
 
     def __init__(self, id=None):
         if id == '':
@@ -38,7 +39,7 @@ class immobrain_search_query:
     @staticmethod
     def load_variable_documentation():
         immobrain_search_query.column_documentation = {}
-        r = requests.get(endpoint+'/vars/',
+        r = immobrain_search_query.session.get(endpoint+'/vars/',
                          auth=(username, password),
                          headers=json_headers)
         if r.status_code >= 300:
@@ -75,7 +76,7 @@ class immobrain_search_query:
             return None
 
     def generate_id(self):
-        r = requests.post(endpoint+'/queries',
+        r = immobrain_search_query.session.post(endpoint+'/queries',
                           auth=(username, password),
                           data=json.dumps(self.to_query()),
                           headers=json_headers)
@@ -87,7 +88,7 @@ class immobrain_search_query:
         self.pull_details_for_query()
 
     def pull_details_for_query(self):
-        r = requests.get(endpoint+'/queries/%s' % (self.id,),
+        r = immobrain_search_query.session.get(endpoint+'/queries/%s' % (self.id,),
                          auth=(username, password),
                          headers=json_headers)
         logging.debug(r.text)
@@ -99,7 +100,7 @@ class immobrain_search_query:
         if not self.id:
             self.generate_id()
         logging.info("Querying: %s" % (self.id))
-        r = requests.get(endpoint+'/results/%s/%s' % (self.id, type),
+        r = immobrain_search_query.session.get(endpoint+'/results/%s/%s' % (self.id, type),
                          auth=(username, password),
                          headers=json_headers)
         if r.status_code < 300:
@@ -389,7 +390,7 @@ class peripherySpatialFilter(immobrain_filter):
 
     def get_position(self):
         logging.debug("Pulling Position for %s" % (self.adresse,))
-        r = requests.get(endpoint+'/georef',
+        r = immobrain_search_query.session.get(endpoint+'/georef',
                          auth=(username, password),
                          params={"address": self.adresse},
                          headers=json_headers)
