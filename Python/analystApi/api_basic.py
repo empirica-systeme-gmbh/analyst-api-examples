@@ -19,6 +19,8 @@ json_headers = {
 
 
 class immobrain_search_query:
+    column_documentation = {}
+
     def __init__(self, id=None):
         if id == '':
             self.id = None
@@ -30,10 +32,12 @@ class immobrain_search_query:
         self.details = None
         self.data = {}
 
-        self.load_variable_documentation()
+        if not immobrain_search_query.column_documentation:
+            immobrain_search_query.load_variable_documentation()
 
-    def load_variable_documentation(self):
-        self.column_documentation = {}
+    @staticmethod
+    def load_variable_documentation():
+        immobrain_search_query.column_documentation = {}
         r = requests.get(endpoint+'/vars/',
                          auth=(username, password),
                          headers=json_headers)
@@ -41,7 +45,7 @@ class immobrain_search_query:
             raise Exception(json.loads(r.text)['error'])
         # Iterate over every possible variable
         for item in json.loads(r.text)['vars']:
-            self.column_documentation[item['key']] = item
+            immobrain_search_query.column_documentation[item['key']] = item
 
     def get_filter_for_column(self, column):
         if column == 'ID':
