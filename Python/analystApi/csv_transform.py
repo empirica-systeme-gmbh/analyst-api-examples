@@ -7,6 +7,8 @@ import csv
 import json
 import random
 import configparser
+import sys
+
 from analystApi import api_basic
 import logging
 import argparse
@@ -76,7 +78,6 @@ def execute_query_per_csv_line(args):
                                      'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
     except Exception:
         print("Unexpected error:", sys.exc_info()[0])
-    raise
 
 def main():
 
