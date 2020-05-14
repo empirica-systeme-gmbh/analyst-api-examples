@@ -50,11 +50,11 @@ class immobrain_search_query:
             column_documentation[item['key']] = item
 
     def get_filter_for_column(self, column):
-        if column == 'ID':
+        if column.toLower() == 'id':
             return None
-        if column == 'Adresse':
+        if column.toLower() 'adresse':
             return get_filter('peripherySpatialFilter')
-        if column == 'Segment':
+        if column.toLower() == 'segment':
             return get_filter("segmentFilter")
         try:
             # fl_wohnen::von // fl_wohnen::bis
