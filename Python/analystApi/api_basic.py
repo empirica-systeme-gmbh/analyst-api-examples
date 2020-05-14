@@ -56,6 +56,10 @@ class immobrain_search_query:
             return get_filter('peripherySpatialFilter')
         if column.lower() == 'segment':
             return get_filter("segmentFilter")
+        if column.lower() == 'startdate':
+            return get_filter("rangeDateFilter")
+        if column.lower() == 'enddate':
+            return get_filter("rangeDateFilter")
         try:
             # fl_wohnen::von // fl_wohnen::bis
             column = column.split('::')[0].lower()
@@ -196,6 +200,7 @@ def get_filter(filter_name):
     # class to handle it by type.
     available_filters = {
         "rangeFilter": rangeFilter,
+        "rangeDateFilter": rangeDateFilter,
         "timePeriodFilter": timePeriodFilter,
         "peripherySpatialFilter": peripherySpatialFilter,
         "segmentFilter": segmentFilter,
@@ -337,13 +342,45 @@ class rangeFilter(immobrain_filter):
             "var": self.filter_name,
             "includeUnknown": include_unknown_default
         }
-        if (self.min != None and self.max != None) and (float(self.min) > float(self.max)):
+        if (self.min is not None and self.max is not None) and (float(self.min) > float(self.max)):
             raise Exception("%s has min bigger than max!" % (self.filter_name))
-        if self.min != None:
+        if self.min is not None:
             doc["minValue"] = self.min
-        if self.max != None:
+        if self.max is not None:
             doc["maxValue"] = self.max
 
+        return doc
+
+
+class rangeDateFilter(immobrain_filter):
+    def __init__(self, column_name):
+        super().__init__()
+        self.filter_name = column_name
+        self.name = 'rangeDateFilters'
+        self.min = None
+        self.max = None
+        # Is it possible to have multiple of these in an array of filters, or is it exactly one?
+        self.unique = False
+
+    def set_min(self, min):
+        self.min = min
+
+    def set_max(self, max):
+        self.max = max
+
+    def set_value(self, value):
+        self.min = float(value) - 2
+        self.max = float(value) + 2
+
+    def to_query(self):
+        doc = {
+            "var": self.filter_name,
+            "includeUnknown": include_unknown_default
+        }
+        if self.min is not None:
+            doc["minValue"] = self.min
+        if self.max is not None:
+            doc["maxValue"] = self.max
         return doc
 
 
@@ -365,9 +402,9 @@ class timePeriodFilter(immobrain_filter):
 
     def to_query(self):
         doc = {}
-        if self.min != None:
+        if self.min is not None:
             doc["from"] = self.min
-        if self.max != None:
+        if self.max is not None:
             doc["until"] = self.max
 
         return doc
