@@ -202,3 +202,7 @@ A thusly formatted template has been created.
             pass
 
     logging.debug("Done")
+
+
+if __name__ == "__main__":
+    main()
