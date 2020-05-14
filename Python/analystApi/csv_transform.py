@@ -17,63 +17,66 @@ from os.path import expanduser
 
 
 def execute_query_per_csv_line(args):
-    line, values_to_add, csv_writer = args
-    collected_errormessages = []
-    # Each Input-Line is a Query. Instanciate accordingly
-    isq = api_basic.immobrain_search_query()
-
-    # Add the Columns from CSV.
-    # Columns are quite likely to contain filter-variables.
-    # Add all variables as filters.
-    # If a column doesnt look like a valid filter complain but continue.
-    for column_name in line:
-        if column_name.lower() in ['id', 'kommentar', 'comment']:
-            # Let's not complain about comments and ID being invalid filters.
-            continue
-        try:
-            isq.add_column(column_name, line[column_name].strip())
-        except Exception as e:
-            logging.info("Could not add column %s" % (column_name))
-            logging.warning(str(e))
-
-            collected_errormessages.append(str(e))
-
-    # Execute Querys and collect values as required.
-    for value in values_to_add:
-        try:
-            isq.collect(value)
-        except Exception as e:
-            logging.warning(str(e))
-            collected_errormessages.append(str(e))
-
-            # There is little reason to continue. It _might_ yield results
-            # but realistically speaking a retry will happen anyway.
-            # Die quickly so we don't bloat with errors
-            break
-
-    query_pretty = ''
     try:
-        query_pretty = json.dumps(isq.to_query(), indent=4, sort_keys=True)
-    except:
-        # If an error prevents a query from coming into play ( e.g. missing adress )
-        # skip
-        pass
-    # Pythonic "merge dicts"
-    # Output-Row should contain "old"-Value and whatever is new.
-    output_row = {**(line), **{'distance_used': isq.get_distance_used(),
-                               'precision': isq.get_precision(),
-                               'query': query_pretty,
-                               },
-                  **(isq.data)}
-    output_row['QUERY-ID'] = isq.id
+        line, values_to_add, csv_writer = args
+        collected_errormessages = []
+        # Each Input-Line is a Query. Instanciate accordingly
+        isq = api_basic.immobrain_search_query()
 
-    logging.debug(output_row)
-    csv_writer.writerow(output_row)
+        # Add the Columns from CSV.
+        # Columns are quite likely to contain filter-variables.
+        # Add all variables as filters.
+        # If a column doesnt look like a valid filter complain but continue.
+        for column_name in line:
+            if column_name.lower() in ['id', 'kommentar', 'comment']:
+                # Let's not complain about comments and ID being invalid filters.
+                continue
+            try:
+                isq.add_column(column_name, line[column_name].strip())
+            except Exception as e:
+                logging.info("Could not add column %s" % (column_name))
+                logging.warning(str(e))
 
-    # Regardless of logging, this is expected output:
-    print(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
-                                 'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
+                collected_errormessages.append(str(e))
 
+        # Execute Querys and collect values as required.
+        for value in values_to_add:
+            try:
+                isq.collect(value)
+            except Exception as e:
+                logging.warning(str(e))
+                collected_errormessages.append(str(e))
+
+                # There is little reason to continue. It _might_ yield results
+                # but realistically speaking a retry will happen anyway.
+                # Die quickly so we don't bloat with errors
+                break
+
+        query_pretty = ''
+        try:
+            query_pretty = json.dumps(isq.to_query(), indent=4, sort_keys=True)
+        except:
+            # If an error prevents a query from coming into play ( e.g. missing adress )
+            # skip
+            pass
+        # Pythonic "merge dicts"
+        # Output-Row should contain "old"-Value and whatever is new.
+        output_row = {**(line), **{'distance_used': isq.get_distance_used(),
+                                   'precision': isq.get_precision(),
+                                   'query': query_pretty,
+                                   },
+                      **(isq.data)}
+        output_row['QUERY-ID'] = isq.id
+
+        logging.debug(output_row)
+        csv_writer.writerow(output_row)
+
+        # Regardless of logging, this is expected output:
+        print(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
+                                     'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
+    except Exception:
+        print("Unexpected error:", sys.exc_info()[0])
+    raise
 
 def main():
 
