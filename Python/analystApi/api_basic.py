@@ -59,7 +59,7 @@ class immobrain_search_query:
         try:
             # fl_wohnen::von // fl_wohnen::bis
             column = column.split('::')[0].lower()
-            return get_filter(self.column_documentation[column]['filterModelName'])
+            return get_filter(column_documentation[column]['filterModelName'])
         except:
             pass
         return None
