@@ -33,11 +33,11 @@ Uninstall
 ----
 
 ```shell
-sudo pip3 uninstall analyst-api-python
+sudo pip3 uninstall analystApi
 ```
 or if you used `--user` when installing:
 ```shell
-pip3 uninstall analyst-api-python
+pip3 uninstall analystApi
 ```
 
 
