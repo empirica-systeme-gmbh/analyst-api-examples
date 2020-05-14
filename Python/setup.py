@@ -16,9 +16,9 @@ tests_requires=[
 
 setup(
     name='analystApi',
-    version='0.0.2',
+    version='0.1',
     #license='MIT',
-    author='empirica-systeme',
+    author='Value AG',
     author_email='info@empirica-systeme.de',
     description='',
     # long_description=readme,
