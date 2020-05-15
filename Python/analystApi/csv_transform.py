@@ -187,13 +187,13 @@ An empty template has been created.
                           'precision', 'query'] + values_to_add
 
         (csv_file_base, csv_file_type) = os.path.splitext(csv_file)
+        output_csv_file = csv_file_base + '_executed.csv'
 
         if args.C:
-            psql_writer.write_to_file(csv_file_base, csv_reader.fieldnames, values_to_add)
+            psql_writer.write_to_file(output_csv_file, csv_reader.fieldnames, values_to_add)
 
         csv_writer = csv.DictWriter(
-            open(
-                csv_file_base + '_executed.csv', 'w'),
+            open(output_csv_file, 'w'),
             delimiter=',',
             fieldnames=fieldnames_out)
         csv_writer.writeheader()

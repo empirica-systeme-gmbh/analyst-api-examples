@@ -1,28 +1,30 @@
+import os
 import string
 
 import analystApi.api_basic
 from analystApi.api_basic import immobrain_search_query
 
 
-def write_to_file(basename, columns, values_to_add):
-    lines = construct_file_content(basename, columns, values_to_add)
+def write_to_file(output_filename, columns, values_to_add):
+    (basename, fileext) = os.path.splitext(output_filename)
+    tablename = os.path.basename(basename)
+    lines = construct_file_content(tablename, output_filename, columns, values_to_add)
     with open(basename + '.psql', 'w') as psql_file:
         psql_file.writelines(lines)
 
 
-def construct_file_content(basename, columns, values_to_add):
+def construct_file_content(tablename, filename, columns, values_to_add):
     column_lines = construct_column_definitions(columns, values_to_add)
+    lines = f"""
+psql -c 'DROP TABLE IF EXISTS {tablename};'
 
-    lines = """
-psql -c 'DROP TABLE IF EXISTS {basename};'
-
-psql -c 'CREATE TABLE {basename}
+psql -c 'CREATE TABLE {tablename}
 (
 {column_lines}
 )'
 
-psql -c "\\copy {basename} from {basename}.csv delimiter ',' csv header;"
-""".format(basename=basename, column_lines=column_lines)
+psql -c "\\copy {tablename} from {filename} delimiter ',' csv header;"
+"""
     return lines
 
 
