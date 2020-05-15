@@ -111,7 +111,7 @@ def main():
     logging.basicConfig(
         level=target_loglevel)
 
-    logging.debug("Starting..")
+    logging.info("Starting against ")
     # Load our configuation-file. Complain and exit if this fails.
     try:
         config = configparser.ConfigParser()
@@ -133,7 +133,7 @@ include_unknown = False
 
 """
 
-        logging.fatal("""A local file named 'analystApi.login' is required.
+        logging.fatal("""File 'analystApi.login' is required in your home directory.
 
 !!!!!
 
@@ -141,7 +141,7 @@ include_unknown = False
 
 !!!!
 
-A thusly formatted template has been created.
+An empty template has been created.
 """ % (template_login_file_contents,))
 
         # Let's not nest exceptions here. If the file can not be written now
@@ -149,7 +149,7 @@ A thusly formatted template has been created.
         with open(login_file, 'w') as f:
             f.write(template_login_file_contents)
 
-        raise (e)
+        raise e
 
     # Push credentials and endpoints into the api_basic module.
     # Refactoring might move there variables into one of the contained classes
