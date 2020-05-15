@@ -49,7 +49,8 @@ class immobrain_search_query:
         for item in json.loads(r.text)['vars']:
             column_documentation[item['key']] = item
 
-    def get_filter_for_column(self, column):
+    @staticmethod
+    def get_filter_for_column(column):
         if column.lower() == 'id':
             return None
         if column.lower() == 'adresse':
@@ -211,6 +212,10 @@ class immobrain_filter:
         self.known_special_keys = []
         self.special_keys = {}
 
+    @staticmethod
+    def get_sql_type():
+        raise NotImplementedError("get_sql_type Not Implemented")
+
     def set_min(self, value):
         raise NotImplementedError("set_min Not Implemented")
 
@@ -243,6 +248,10 @@ class segmentFilter(immobrain_filter):
         self.unique = True
         self.value = None
 
+    @staticmethod
+    def get_sql_type():
+        return 'text'
+
     def set_value(self, value):
         self.value = value
 
@@ -257,6 +266,10 @@ class CategoryFilter(immobrain_filter):
         self.name = 'categoryFilters'
         self.unique = False
         self.value = None
+
+    @staticmethod
+    def get_sql_type():
+        return 'integer'
 
     def set_value(self, value):
         # Split by character is possibly the worst way to identify columns of arbitrary datatypes
@@ -281,6 +294,10 @@ class BooleanFilter(immobrain_filter):
         self.value = None
         self.known_special_keys = ["includeTrue", "includeFalse", "includeUnknown"]
         self.special_keys = {"includeUnknown": include_unknown_default}  # default
+
+    @staticmethod
+    def get_sql_type():
+        return 'boolean'
 
     def to_bool(self, value):
         """ Mimmic Java.lang.boolean """
@@ -313,6 +330,10 @@ class rangeFilter(immobrain_filter):
         self.max = None
         # Is it possible to have multiple of these in an array of filters, or is it exactly one?
         self.unique = False
+
+    @staticmethod
+    def get_sql_type():
+        return 'numeric'
 
     def sanitize(self, number):
         # lets assume min/max are numbers.
@@ -359,6 +380,10 @@ class rangeDateFilter(immobrain_filter):
         # Is it possible to have multiple of these in an array of filters, or is it exactly one?
         self.unique = False
 
+    @staticmethod
+    def get_sql_type():
+        return 'date'
+
     def set_min(self, min):
         self.min = min
 
@@ -390,6 +415,10 @@ class timePeriodFilter(immobrain_filter):
         self.max = None
         # Is it possible to have multiple of these in an array of filters, or is it exactly one?
         self.unique = True
+
+    @staticmethod
+    def get_sql_type():
+        return 'date'
 
     def set_min(self, min):
         self.min = min
