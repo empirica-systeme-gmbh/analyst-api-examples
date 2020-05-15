@@ -56,10 +56,6 @@ class immobrain_search_query:
             return get_filter('peripherySpatialFilter')
         if column.lower() == 'segment':
             return get_filter("segmentFilter")
-        if column.lower() == 'startdate':
-            return get_filter("rangeDateFilter")
-        if column.lower() == 'enddate':
-            return get_filter("rangeDateFilter")
         try:
             # fl_wohnen::von // fl_wohnen::bis
             column = column.split('::')[0].lower()
