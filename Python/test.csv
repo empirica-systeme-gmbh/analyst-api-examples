@@ -1,4 +1,4 @@
 ID,Adresse,Segment,fl_wohnen::von,fl_wohnen::bis,baujahr,fl_gewerbe,kommentar,Adresse::minCount
-POO-2321S,"Brunsstr. 31, 72074 Tübingen",WHG_M,190,200,1920,,"-> fl_wohnen von190 bis 200, baujahr 1919 bis 1921",100
+POO-2321S,"Einsteinufer 63a, 10587, Berlin",WHG_M,190,200,1920,,"-> fl_wohnen von190 bis 200, baujahr 1919 bis 1921",100
 OJID-DD2,"Straßburger Weg 26, 53113 Bonn",EZFH_K,200,,,,-> fl_wohnen von200 bis ende offen,100
 JIOD-23D,"Karlstr. 3, 72072 Tübingen",GEWERBE_M,,,,100,-> soll von 99 bis 101 filtern,100

@@ -45,7 +45,7 @@ Basic Usage
 ----
 
 Required local files:
-- `Adressen_Demo.csv`
+- `test.csv`
 - `analystApi.login`
 
 Add required data in `analystApi.login`:
@@ -109,10 +109,10 @@ Example
 Executing the command
 
 ```shell
-analystApi_csv Adressen_Demo.csv --testonepercent
+analystApi_csv test.csv --testonepercent
 ```
 will produce an output like
 
-> POO-2321S, Brunsstr. 31, 72074 Tübingen => 7055099 OK
+> POO-2321S, Einsteinufer 63 a, 10587 Berlin => 7055099 OK
 
-and a new file `Adressen_Demo_executed.csv` will be created containing the results.
+and a new file `test_executed.csv` will be created containing the results.
