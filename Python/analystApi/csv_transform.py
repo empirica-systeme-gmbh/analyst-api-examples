@@ -111,7 +111,7 @@ def main():
     logging.basicConfig(
         level=target_loglevel)
 
-    logging.info("Starting against ")
+    logging.info("Starting.. ")
     # Load our configuation-file. Complain and exit if this fails.
     try:
         config = configparser.ConfigParser()
@@ -159,6 +159,9 @@ An empty template has been created.
     api_basic.password = config.get('global', 'password')
     csv_file = args.csvfile
     api_basic.endpoint = config.get('global', 'endpoint')
+
+    logging.info("Using API at "+api_basic.endpoint)
+
     api_basic.include_unknown_default = False
     if config.get('global', 'include_unknown'):
         logging.info("Default_Value for Unknown-Values Set")
