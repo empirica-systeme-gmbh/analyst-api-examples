@@ -9,7 +9,7 @@ import random
 import configparser
 import sys
 
-from analystApi import api_basic
+from analystApi import api_basic, psql_writer
 import logging
 import argparse
 import math
@@ -86,6 +86,11 @@ def main():
     # CSV-File is always required.
     parser.add_argument(
         'csvfile', help='The CSV to load. Output will have an _executed-suffix')
+
+    # SQL-File
+    parser.add_argument(
+        '-C', help='Create a file with PSQL for creating a table to import the results to',
+        action='store_true')
 
     # It is not verbose, unless ticked
     parser.add_argument(
@@ -182,6 +187,10 @@ An empty template has been created.
                           'precision', 'query'] + values_to_add
 
         (csv_file_base, csv_file_type) = os.path.splitext(csv_file)
+
+        if args.C:
+            psql_writer.write_to_file(csv_file_base, csv_reader.fieldnames, values_to_add)
+
         csv_writer = csv.DictWriter(
             open(
                 csv_file_base + '_executed.csv', 'w'),
