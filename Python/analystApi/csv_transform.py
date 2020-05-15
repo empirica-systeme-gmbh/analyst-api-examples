@@ -79,8 +79,8 @@ def execute_query_per_csv_line(args):
     except Exception:
         print("Unexpected error:", sys.exc_info()[0])
 
-def main():
 
+def main():
     parser = argparse.ArgumentParser()
 
     # CSV-File is always required.
@@ -93,7 +93,9 @@ def main():
     parser.add_argument(
         '--veryverbose', help='Turn to maximum verbosity', action='store_true')
     parser.add_argument(
-        '--testonepercent', help='Test one percent of the entrys only. Helps validating the job itself.', action='store_true')
+        '--testonepercent',
+        help='Test one percent of the entrys only. Helps validating the job itself.',
+        action='store_true')
     args = parser.parse_args()
 
     home = expanduser("~")
@@ -120,7 +122,7 @@ def main():
             # we happily take the chance to punish the users choice.
             raise Exception("Template-File found. Please use real credentials")
     except Exception as e:
-        logging.fatal("Could not load '%s'" % (login_file, ))
+        logging.fatal("Could not load '%s'" % (login_file,))
         template_login_file_contents = """
 [global]
 username = XXX
@@ -140,7 +142,7 @@ include_unknown = False
 !!!!
 
 A thusly formatted template has been created.
-""" % (template_login_file_contents, ))
+""" % (template_login_file_contents,))
 
         # Let's not nest exceptions here. If the file can not be written now
         # there is little reason in continuing our endeavour.
@@ -173,13 +175,13 @@ A thusly formatted template has been created.
         # Output-CSV has more columns than input, so input-columns + QUERY-ID + whatever
         # we're looking for needs to be inserted
         fieldnames_out = csv_reader.fieldnames + \
-            ['--RESULTS--', 'QUERY-ID', 'distance_used',
-                'precision', 'query'] + values_to_add
+                         ['--RESULTS--', 'QUERY-ID', 'distance_used',
+                          'precision', 'query'] + values_to_add
 
         (csv_file_base, csv_file_type) = os.path.splitext(csv_file)
         csv_writer = csv.DictWriter(
             open(
-                csv_file_base+'_executed.csv', 'w'),
+                csv_file_base + '_executed.csv', 'w'),
             delimiter=',',
             fieldnames=fieldnames_out)
         csv_writer.writeheader()
@@ -192,7 +194,7 @@ A thusly formatted template has been created.
         # Rounding should be ceil'd, otherwise we might just pull nothing.
         if args.testonepercent:
             csv_entrys = random.sample(
-                csv_entrys, math.ceil(len(csv_entrys)*0.01))
+                csv_entrys, math.ceil(len(csv_entrys) * 0.01))
 
         # for line in csv_entrys:
         #    execute_query_per_csv_line(line, values_to_add, csv_writer)

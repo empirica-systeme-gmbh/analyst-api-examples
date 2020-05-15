@@ -230,8 +230,8 @@ class immobrain_filter:
 
     def set_special_key(self, key, value):
         key = \
-        [correctly_spelled_key for correctly_spelled_key in self.known_special_keys if correctly_spelled_key.lower()
-         == key.lower()][0]
+            [correctly_spelled_key for correctly_spelled_key in self.known_special_keys if correctly_spelled_key.lower()
+             == key.lower()][0]
         self.special_keys[key] = value
 
 
