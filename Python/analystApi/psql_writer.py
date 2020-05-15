@@ -69,8 +69,16 @@ def construct_column_definitions(columns, values_to_add):
     lines.append('')
 
     # Write the filter  block
-    for col_name, col_type in filter_cols.items():
-        append_col_and_remove_if_exists(lines, col_name, col_type, cols)
+    # for col_name, col_type in filter_cols.items():
+    #     append_col_and_remove_if_exists(lines, col_name, col_type, cols)
+
+    for col in cols:
+        col_filter = immobrain_search_query.get_filter_for_column(col)
+        if col_filter is None:
+            col_type = 'text'
+        else:
+            col_type = col_filter.get_sql_type()
+        append_col_and_remove_if_exists(lines, col, col_type, cols)
 
     lines.append('')
     lines.append('results_start_here text,')
