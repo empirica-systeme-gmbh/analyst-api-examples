@@ -2,9 +2,9 @@
 # This work is licensed under a "Creative Commons Attribution 4.0 International License", sett http://creativecommons.org/licenses/by/4.0/
 # Documentation of REST-API at https://api.empirica-systeme.de/api-docs/
 
-import os
 import json
 import logging
+
 import requests
 
 username = ''
@@ -270,6 +270,7 @@ class CategoryFilter(immobrain_filter):
 
 class BooleanFilter(immobrain_filter):
     def __init__(self, column_name):
+        super().__init__()
         self.column_name = column_name
         self.ternary_logic = False
         # if column_name[-1] == '3':
