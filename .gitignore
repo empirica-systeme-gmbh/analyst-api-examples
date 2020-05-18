@@ -1,4 +1,4 @@
 /.idea/
 /Python/Adressen_Demo_executed.csv
 /analyst-api-examples.iml
-analystApi/__pycache__
+Python/analystApi/__pycache__/
