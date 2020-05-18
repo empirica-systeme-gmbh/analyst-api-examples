@@ -188,6 +188,7 @@ An empty template has been created.
     api_basic.password = config.get('global', 'password')
     csv_file = args.csvfile
     api_basic.endpoint = config.get('global', 'endpoint')
+    client_workers = int(config.get('global', 'client_workers'))
 
     logging.info("Using API at " + api_basic.endpoint)
 
@@ -232,8 +233,11 @@ An empty template has been created.
             csv_entrys = random.sample(
                 csv_entrys, math.ceil(len(csv_entrys) * 0.01))
 
-        # TODO Make max_workers a parameter. Should be 1 by default!
-        with ThreadPoolExecutor(max_workers=1) as executor:
+        if client_workers > 29:
+            client_workers = 29
+        if client_workers > 1:
+            print("Using %s clients..." % client_workers)
+        with ThreadPoolExecutor(max_workers=client_workers) as executor:
             tasks = [(line, values_to_add, csv_writer) for line in csv_entrys]
             executor.map(execute_query_per_csv_line, tasks)
 
