@@ -118,11 +118,6 @@ def main():
     parser.add_argument(
         'csvfile', help='The CSV to load. Output will have an _executed-suffix')
 
-    # SQL-File
-    parser.add_argument(
-        '-C', help='Create a file with PSQL for creating a table to import the results to',
-        action='store_true')
-
     # It is not verbose, unless ticked
     parser.add_argument('-v', '--verbose', help='Turn to a nice verbosity', action='store_true')
     parser.add_argument('-V', '--veryverbose', help='Turn to maximum verbosity', action='store_true')
@@ -220,8 +215,7 @@ An empty template has been created.
         (csv_file_base, csv_file_type) = os.path.splitext(csv_file)
         output_csv_file = csv_file_base + '_executed.csv'
 
-        if args.C:
-            psql_writer.write_to_file(output_csv_file, csv_reader.fieldnames, values_to_add)
+        psql_writer.write_to_file(output_csv_file, csv_reader.fieldnames, values_to_add)
 
         csv_writer = csv.DictWriter(
             open(output_csv_file, 'w'),
