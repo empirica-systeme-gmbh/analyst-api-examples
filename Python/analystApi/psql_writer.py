@@ -1,5 +1,4 @@
 import os
-import string
 
 import analystApi.api_basic
 from analystApi.api_basic import immobrain_search_query
@@ -42,21 +41,7 @@ def construct_column_definitions(columns, values_to_add):
         'Adresse::distance': 'numeric',
         'Adresse::mincount': 'integer',
         'Adresse::maxdistance': 'integer',
-        'segment': 'text'
-    }
-
-    filter_cols = {
-        'startdate::von': 'date',
-        'enddate::bis': 'date',
-        'baujahr::von': 'integer',
-        'baujahr::bis': 'integer',
-        'flaeche::von': 'numeric',
-        'flaeche::bis': 'numeric',
-        'fl_grundstueck::von': 'numeric',
-        'fl_grundstueck::bis': 'numeric',
-        'zust_klassen_empirica': 'integer',
-        'aus_klassen_empirica': 'integer',
-        'oeig_neubau_janein': 'boolean',
+        'segment': 'text',
     }
 
     if not contains(col_id, cols):
@@ -64,23 +49,21 @@ def construct_column_definitions(columns, values_to_add):
 
     lines = []
 
-    # Write the first static block
-    for col_name, col_type in basic_cols.items():
-        append_col_and_remove_if_exists(lines, col_name, col_type, cols)
-
-    lines.append('')
-
-    # Write the filter  block
-    # for col_name, col_type in filter_cols.items():
-    #     append_col_and_remove_if_exists(lines, col_name, col_type, cols)
-
-    for col in cols:
-        col_filter = immobrain_search_query.get_filter_for_column(col)
-        if col_filter is None:
-            col_type = 'text'
+    # Handle all columns
+    while cols:
+        col = cols.pop(0)       # Remove first element
+        if col in [k.lower() for k in basic_cols]:
+            for col_name, col_type in basic_cols.items():
+                if col == col_name.lower():
+                    append_col(lines, col_name, col_type)
+                    break
         else:
-            col_type = col_filter.get_sql_type()
-        append_col_and_remove_if_exists(lines, col, col_type, cols)
+            col_filter = immobrain_search_query.get_filter_for_column(col)
+            if col_filter is None:
+                col_type = 'text'
+            else:
+                col_type = col_filter.get_sql_type()
+            append_col(lines, col, col_type)
 
     lines.append('')
     lines.append('results_start_here text,')
@@ -100,6 +83,10 @@ def construct_column_definitions(columns, values_to_add):
     lines_string = '\n'.join([f'    {line}' for line in lines])
     # remove last comma
     return lines_string
+
+
+def append_col(lines, name, col_type):
+    lines.append(f'"{name}" {col_type},')
 
 
 def append_col_and_remove_if_exists(lines, name, col_type, columns_lowercase):
