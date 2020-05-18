@@ -2,20 +2,20 @@
 # This work is licensed under a "Creative Commons Attribution 4.0 International License", sett http://creativecommons.org/licenses/by/4.0/
 # Documentation of REST-API at https://api.empirica-systeme.de/api-docs/
 
-import os
+import argparse
+import configparser
 import csv
 import json
+import logging
+import math
+import os
 import random
-import configparser
 import sys
+from concurrent.futures import ThreadPoolExecutor
+import time
+from os.path import expanduser
 
 from analystApi import api_basic, psql_writer
-import logging
-import argparse
-import math
-import traceback
-from concurrent.futures import ThreadPoolExecutor
-from os.path import expanduser
 
 
 def execute_query_per_csv_line(args):
@@ -36,7 +36,7 @@ def execute_query_per_csv_line(args):
             try:
                 isq.add_column(column_name, line[column_name].strip())
             except Exception as e:
-                logging.info("Could not add column %s" % (column_name))
+                logging.info("Could not add column %s" % column_name)
                 logging.warning(str(e))
 
                 collected_errormessages.append(str(e))
@@ -57,17 +57,17 @@ def execute_query_per_csv_line(args):
         query_pretty = ''
         try:
             query_pretty = json.dumps(isq.to_query(), indent=4, sort_keys=True)
-        except:
+        except Exception:
             # If an error prevents a query from coming into play ( e.g. missing adress )
             # skip
             pass
         # Pythonic "merge dicts"
         # Output-Row should contain "old"-Value and whatever is new.
-        output_row = {**(line), **{'distance_used': isq.get_distance_used(),
-                                   'precision': isq.get_precision(),
-                                   'query': query_pretty,
-                                   },
-                      **(isq.data)}
+        output_row = {**line, **{'distance_used': isq.get_distance_used(),
+                                 'precision': isq.get_precision(),
+                                 'query': query_pretty,
+                                 },
+                      **isq.data}
         output_row['QUERY-ID'] = isq.id
 
         logging.debug(output_row)
@@ -104,7 +104,7 @@ def main():
     args = parser.parse_args()
 
     home = expanduser("~")
-    login_file = '%s/analystApi.login' % (home)
+    login_file = '%s/analystApi.login' % home
 
     # If verbosity is required, jump to debug.
     if args.veryverbose:
@@ -165,7 +165,7 @@ An empty template has been created.
     csv_file = args.csvfile
     api_basic.endpoint = config.get('global', 'endpoint')
 
-    logging.info("Using API at "+api_basic.endpoint)
+    logging.info("Using API at " + api_basic.endpoint)
 
     api_basic.include_unknown_default = False
     if config.get('global', 'include_unknown'):
@@ -175,16 +175,13 @@ An empty template has been created.
     values_to_add = config.get('global', 'values_to_add').split(' ')
 
     # Open Input-CSV
-    logging.debug("Loading from %s" % (csv_file))
+    logging.debug("Loading from %s" % csv_file)
     with open(csv_file) as filehandle:
         csv_reader = csv.DictReader(filehandle, delimiter=',')
 
-        # Open Output-CSV
-        # Output-CSV has more columns than input, so input-columns + QUERY-ID + whatever
-        # we're looking for needs to be inserted
-        fieldnames_out = csv_reader.fieldnames + \
-                         ['--RESULTS--', 'QUERY-ID', 'distance_used',
-                          'precision', 'query'] + values_to_add
+        # Output-CSV has more columns than input, so input-columns + QUERY-ID + values_to_add...
+        fieldnames_out = concatenate(
+            [csv_reader.fieldnames, ['--RESULTS--', 'QUERY-ID', 'distance_used', 'precision', 'query'], values_to_add])
 
         (csv_file_base, csv_file_type) = os.path.splitext(csv_file)
         output_csv_file = csv_file_base + '_executed.csv'
@@ -213,13 +210,27 @@ An empty template has been created.
 
         with ThreadPoolExecutor(max_workers=8) as executor:
             tasks = [(line, values_to_add, csv_writer) for line in csv_entrys]
-            results = executor.map(execute_query_per_csv_line, tasks)
+            executor.map(execute_query_per_csv_line, tasks)
 
         # actually collect things
-        for result in results:
-            pass
+        executor.shutdown(wait=True)
+
+        time.sleep(2)
 
     logging.debug("Done")
+
+
+def chained(sequences):
+    for seq in sequences:
+        yield from seq
+
+
+def concatenate(sequences):
+    sequences = iter(sequences)
+    first = next(sequences)
+    if hasattr(first, 'join'):
+        return first + ''.join(sequences)
+    return first + type(first)(chained(sequences))
 
 
 if __name__ == "__main__":
