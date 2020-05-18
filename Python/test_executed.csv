@@ -1,0 +1,72 @@
+ID,Adresse,Segment,fl_wohnen::von,fl_wohnen::bis,baujahr,fl_gewerbe,kommentar,Adresse::minCount,--RESULTS--,QUERY-ID,distance_used,precision,query,count,/aggregated/kosten_je_flaeche/MEDIAN,/aggregated/kosten_je_flaeche/AVG,/aggregated/kosten_je_flaeche/AVGFG,/aggregated/kosten/MEDIAN
+OJID-DD2,"Straßburger Weg 26, 53113 Bonn",EZFH_K,200,,,,-> fl_wohnen von200 bis ende offen,100,,7072804,2.0,HOUSE,"{
+    ""peripherySpatialFilter"": {
+        ""coordinate"": {
+            ""biggerArea"": ""Bonn"",
+            ""displayName"": ""Hauskoordinate Stra\u00dfburger Weg 26 (Bonn 53113)"",
+            ""lat"": 50.7169,
+            ""lon"": 7.11624,
+            ""precision"": ""HOUSE""
+        },
+        ""distance"": 0.2,
+        ""minCount"": ""100""
+    },
+    ""rangeFilters"": [
+        {
+            ""includeUnknown"": ""false"",
+            ""minValue"": ""200"",
+            ""var"": ""fl_wohnen""
+        }
+    ],
+    ""segment"": ""EZFH_K""
+}",109.0,3177.27,3224.16,3172.26,888000.0
+JIOD-23D,"Karlstr. 3, 72072 Tübingen",GEWERBE_M,,,,100,-> soll von 99 bis 101 filtern,100,,7187131,13.0,HOUSE,"{
+    ""peripherySpatialFilter"": {
+        ""coordinate"": {
+            ""biggerArea"": ""T\u00fcbingen"",
+            ""displayName"": ""Hauskoordinate Karlstr. 3 (T\u00fcbingen 72072)"",
+            ""lat"": 48.51826,
+            ""lon"": 9.0583,
+            ""precision"": ""HOUSE""
+        },
+        ""distance"": 0.2,
+        ""minCount"": ""100""
+    },
+    ""rangeFilters"": [
+        {
+            ""includeUnknown"": ""false"",
+            ""maxValue"": 102.0,
+            ""minValue"": 98.0,
+            ""var"": ""fl_gewerbe""
+        }
+    ],
+    ""segment"": ""GEWERBE_M""
+}",118.0,8.0,10.14,10.05,800.0
+POO-2321S,"Einsteinufer 63a, 10587, Berlin",WHG_M,190,200,1920,,"-> fl_wohnen von190 bis 200, baujahr 1919 bis 1921",100,,7330202,20.0,HOUSE,"{
+    ""peripherySpatialFilter"": {
+        ""coordinate"": {
+            ""biggerArea"": ""Berlin"",
+            ""displayName"": ""Hauskoordinate Einsteinufer 63a (Berlin 10587)"",
+            ""lat"": 52.5179,
+            ""lon"": 13.32049,
+            ""precision"": ""HOUSE""
+        },
+        ""distance"": 0.2,
+        ""minCount"": ""100""
+    },
+    ""rangeFilters"": [
+        {
+            ""includeUnknown"": ""false"",
+            ""maxValue"": ""200"",
+            ""minValue"": ""190"",
+            ""var"": ""fl_wohnen""
+        },
+        {
+            ""includeUnknown"": ""false"",
+            ""maxValue"": 1922.0,
+            ""minValue"": 1918.0,
+            ""var"": ""baujahr""
+        }
+    ],
+    ""segment"": ""WHG_M""
+}",26.0,10.13,10.54,10.55,2000.0
