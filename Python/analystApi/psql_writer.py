@@ -34,13 +34,13 @@ def construct_column_definitions(columns, values_to_add):
     # lowercase copy of columns
     cols = [x.lower() for x in columns]
 
-    col_id = 'ID'
+    col_id = 'id'
     basic_cols = {
         col_id: 'text NOT NULL',
-        'Adresse': 'text NOT NULL',
-        'Adresse::distance': 'numeric',
-        'Adresse::mincount': 'integer',
-        'Adresse::maxdistance': 'integer',
+        'adresse': 'text NOT NULL',
+        'adresse::distance': 'numeric',
+        'adresse::mincount': 'integer',
+        'adresse::maxdistance': 'integer',
         'segment': 'text',
     }
 
@@ -71,7 +71,7 @@ def construct_column_definitions(columns, values_to_add):
     lines.append('queryid bigint,')
     lines.append('distance_used numeric,'),
     lines.append('precision text,'),
-    lines.append('query text,'),
+    lines.append('query json,'),
     lines.append('')
 
     for v in values_to_add:
