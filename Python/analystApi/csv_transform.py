@@ -11,8 +11,8 @@ import math
 import os
 import random
 import sys
+from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
-import time
 from os.path import expanduser
 
 from analystApi import api_basic, psql_writer
@@ -20,8 +20,12 @@ from analystApi import api_basic, psql_writer
 
 def execute_query_per_csv_line(args):
     try:
-        line, values_to_add, csv_writer = args
+        line: OrderedDict = args[0]
+        values_to_add: OrderedDict = args[1]
+        csv_writer: csv.DictWriter = args[2]
+
         collected_errormessages = []
+
         # Each Input-Line is a Query. Instanciate accordingly
         isq = api_basic.immobrain_search_query()
 
@@ -62,12 +66,14 @@ def execute_query_per_csv_line(args):
             # skip
             pass
         # Pythonic "merge dicts"
+
         # Output-Row should contain "old"-Value and whatever is new.
-        output_row = {**line, **{'distance_used': isq.get_distance_used(),
-                                 'precision': isq.get_precision(),
-                                 'query': query_pretty,
-                                 },
-                      **isq.data}
+        output_row = OrderedDict()
+        output_row.update(line)
+        output_row.update({'distance_used': isq.get_distance_used(),
+                           'precision': isq.get_precision(),
+                           'query': query_pretty})
+        output_row.update(isq.data)
         output_row['QUERY-ID'] = isq.id
 
         logging.debug(output_row)
@@ -205,17 +211,13 @@ An empty template has been created.
             csv_entrys = random.sample(
                 csv_entrys, math.ceil(len(csv_entrys) * 0.01))
 
-        # for line in csv_entrys:
-        #    execute_query_per_csv_line(line, values_to_add, csv_writer)
-
-        with ThreadPoolExecutor(max_workers=8) as executor:
+        # TODO Make max_workers a parameter. Should be 1 by default!
+        with ThreadPoolExecutor(max_workers=1) as executor:
             tasks = [(line, values_to_add, csv_writer) for line in csv_entrys]
             executor.map(execute_query_per_csv_line, tasks)
 
         # actually collect things
         executor.shutdown(wait=True)
-
-        time.sleep(2)
 
     logging.debug("Done")
 
