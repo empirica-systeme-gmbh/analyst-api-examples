@@ -103,7 +103,7 @@ class immobrain_search_query:
     def collect(self, type):
         if not self.id:
             self.generate_id()
-        logging.info("Querying: %s" % (self.id))
+        logging.info("Querying: %s" % self.id)
         r = immobrain_search_query.session.get(endpoint + '/results/%s/%s' % (self.id, type),
                                                auth=(username, password),
                                                headers=json_headers)
@@ -115,9 +115,9 @@ class immobrain_search_query:
         else:
             if not self.meta_data:
                 logging.warning("QueryID invalid. CSV outdated? Regenerating ID %s .." %
-                                (self.id))
+                                self.id)
                 self.generate_id()
-                logging.info("New Query-ID = %s" % (self.id))
+                logging.info("New Query-ID = %s" % self.id)
                 self.collect(type)
             # raise Exception(self.data)
 
@@ -153,7 +153,7 @@ class immobrain_search_query:
         filter = self.get_filter_for_column(column)
         if not filter:
             raise Exception(
-                "Column '%s' is not a valid Filtercolumn" % (column))
+                "Column '%s' is not a valid Filtercolumn" % column)
 
         self.filter[column] = filter(column)
 
@@ -473,13 +473,13 @@ class peripherySpatialFilter(immobrain_filter):
             self.biggerArea = response["biggerArea"]
 
         except Exception as e:
-            raise (e)
+            raise e
 
     def to_query(self):
 
         if not self.lon and not self.lat:
             # No valid GeoRef..
-            raise Exception("Address has not been initialized")
+            raise Exception("Address failed to georef: %", self.adresse)
         doc = {
             "coordinate": {
                 "lat": self.lat,

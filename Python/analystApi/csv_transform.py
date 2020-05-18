@@ -17,6 +17,8 @@ from os.path import expanduser
 
 from analystApi import api_basic, psql_writer
 
+brokenColumns = []
+
 
 def execute_query_per_csv_line(args):
     try:
@@ -33,17 +35,24 @@ def execute_query_per_csv_line(args):
         # Columns are quite likely to contain filter-variables.
         # Add all variables as filters.
         # If a column doesnt look like a valid filter complain but continue.
-        for column_name in line:
+        for column_name in line.copy():
+            if column_name in brokenColumns:
+                continue
+
             if column_name.lower() in ['id', 'kommentar', 'comment']:
                 # Let's not complain about comments and ID being invalid filters.
                 continue
             try:
                 isq.add_column(column_name, line[column_name].strip())
             except Exception as e:
-                logging.info("Could not add column %s" % column_name)
-                logging.warning(str(e))
-
                 collected_errormessages.append(str(e))
+
+                if column_name.lower() in ['adresse', 'adresse']:
+                    continue
+
+                brokenColumns.append(column_name)
+                logging.warning("Could not add column %s" % column_name)
+                logging.warning(str(e))
 
         # Execute Querys and collect values as required.
         for value in values_to_add:
@@ -105,10 +114,8 @@ def main():
         action='store_true')
 
     # It is not verbose, unless ticked
-    parser.add_argument(
-        '--verbose', help='Turn to a nice verbosity', action='store_true')
-    parser.add_argument(
-        '--veryverbose', help='Turn to maximum verbosity', action='store_true')
+    parser.add_argument('-v', '--verbose', help='Turn to a nice verbosity', action='store_true')
+    parser.add_argument('-V', '--veryverbose', help='Turn to maximum verbosity', action='store_true')
     parser.add_argument(
         '--testonepercent',
         help='Test one percent of the entrys only. Helps validating the job itself.',
