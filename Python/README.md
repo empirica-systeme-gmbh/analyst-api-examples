@@ -14,46 +14,19 @@ will materialize the given parameters and return the results.
 There is also a [Swagger documentation of the API](https://api-stage.empirica-systeme.de/api-docs/#/Queries/createQuery)
 
 
-Installation / Build
-----
-
-```shell
-apt update
-apt install -y python3-pip
-sudo python3 setup.py install
-```
-
-Alternatively try
-```shell
-python3 setup.py install --user
-```
-
-
-Uninstall
-----
-
-```shell
-sudo pip3 uninstall analystApi
-```
-or if you used `--user` when installing:
-```shell
-pip3 uninstall analystApi
-```
-
-
 Basic Usage
 ----
 
 Required local files:
 - `test.csv`
-- `analystApi.login`
+- `analystApi.login` in your user's homedirectory
 
 Add required data in `analystApi.login`:
 - username = ###.###
 - password = #####
 - endpoint = https://api.empirica-systeme.de
 - include_unknown = True or False #(define wether you want to include unknown values)
-- values_to_add = count /aggregated/kosten_je_flaeche/MEDIAN /aggregated/kosten_je_flaeche/AVG /aggregated/kosten/AVG #(define the values yu want to add to your file)
+- values_to_add = count /aggregated/kosten_je_flaeche/MEDIAN /aggregated/kosten_je_flaeche/AVG /aggregated/kosten/AVG #(define the values you want)
 
 Example:
 ```
@@ -61,8 +34,8 @@ Example:
 username = max.mustermann
 password = 12mxf_21ppq
 endpoint = https://api.empirica-systeme.de
-values_to_add = count /aggregated/kosten_je_flaeche/MEDIAN /aggregated/kosten/AVG
 include_unknown = False
+values_to_add = count /aggregated/kosten_je_flaeche/MEDIAN /aggregated/kosten/AVG
 ```
 
 
@@ -87,18 +60,18 @@ Unvalid filter settings are ignored
 
 Get Results
 ----
-Then, in the folder `Python` where the `setup.py` is located, execute the command
+Then, in the folder `Python` where the `analystApi.sh` is located, execute the command
 
 ```shell
-analystApi_csv filename.csv --testonepercent
+./analystApi.sh test.csv 
 ```
-The results of your query are stored in "filename_executed.csv"
+The results of your query are stored in "test_executed.csv"
 
 
 Interpretation of result columns
 ----
 
-- `count` in results is NULL --> address could not been found
+- `count` in results is NULL --> address has not been georeferenced sucessfully
 - `count` in result is 0 --> address have been found, but no matching cases in radius (check filter settings or max distance)
 - `query` contains the query string that was sent using the [API](https://api-stage.empirica-systeme.de/api-docs/#/Queries/createQuery)
 
@@ -106,10 +79,10 @@ Interpretation of result columns
 
 Example
 ----
-Executing the command
+Executing the command in folder `Python`:
 
 ```shell
-analystApi_csv test.csv --testonepercent
+./analystApi.sh test.csv 
 ```
 will produce an output like
 
