@@ -5,12 +5,14 @@
 import argparse
 import configparser
 import csv
+import datetime
 import json
 import logging
 import math
 import os
 import random
 import sys
+import time
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from os.path import expanduser
@@ -21,6 +23,10 @@ brokenColumns = []
 
 
 def execute_query_per_csv_line(args):
+    if datetime.time.hour == 23 and datetime.time.min >= 50:
+        # Pause um Mittnernacht da die Analyst neustarten
+        time.sleep(60 * 15)
+
     try:
         line: OrderedDict = args[0]
         values_to_add: OrderedDict = args[1]
