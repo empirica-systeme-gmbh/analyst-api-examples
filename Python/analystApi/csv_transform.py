@@ -82,8 +82,14 @@ def execute_query_per_csv_line(args):
         # Regardless of logging, this is expected output:
         print(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
                                      'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
-    except Exception:
-        print("Unexpected error:", sys.exc_info()[0])
+
+    except Exception as e:
+
+        if str(e) == str("User must be in the role rest"):
+            logging.critical("Check your API user: must be in the role 'rest'")
+            sys.exit()
+
+        logging.exception("Unexpected Exception")
 
 
 def main():
@@ -118,7 +124,8 @@ def main():
     elif args.verbose:
         target_loglevel = logging.INFO
     else:
-        target_loglevel = logging.FATAL
+        target_loglevel = logging.WARN
+
     logging.basicConfig(
         level=target_loglevel)
 
