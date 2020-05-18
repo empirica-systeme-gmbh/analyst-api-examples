@@ -109,7 +109,7 @@ class immobrain_search_query:
                                                headers=json_headers)
         r.encoding = 'utf-8'
         if r.status_code < 300:
-            if not 'value' in json.loads(r.text):
+            if 'value' not in json.loads(r.text):
                 raise Exception("There is no Reply-Value for %s/%s" % (self.id, type))
             self.data[type] = json.loads(r.text)['value']
         else:
@@ -479,7 +479,7 @@ class peripherySpatialFilter(immobrain_filter):
 
         if not self.lon and not self.lat:
             # No valid GeoRef..
-            raise Exception("Address failed to georef: %", self.adresse)
+            raise Exception("Address failed to georef: %s" % self.adresse)
         doc = {
             "coordinate": {
                 "lat": self.lat,

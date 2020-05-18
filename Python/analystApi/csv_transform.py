@@ -57,6 +57,10 @@ def execute_query_per_csv_line(args):
         # Execute Querys and collect values as required.
         for value in values_to_add:
             try:
+                # Wenn schon COUNT=0 rauskam, dann nichts weiter probieren...
+                if "count" in isq.data and isq.data['count'] <= 0:
+                    continue
+
                 isq.collect(value)
             except Exception as e:
                 logging.warning(str(e))
@@ -147,7 +151,7 @@ def main():
             # we happily take the chance to punish the users choice.
             raise Exception("Template-File found. Please use real credentials")
     except Exception as e:
-        logging.fatal("Could not load '%s'" % (login_file,))
+        logging.fatal("Could not load '%s'" % login_file)
         template_login_file_contents = """
 [global]
 username = XXX
@@ -193,6 +197,9 @@ An empty template has been created.
         api_basic.include_unknown_default = config.get('global', 'include_unknown')
 
     values_to_add = config.get('global', 'values_to_add').split(' ')
+
+    if "count" not in values_to_add:
+        values_to_add.insert(0, "count")
 
     # Open Input-CSV
     logging.debug("Loading from %s" % csv_file)
