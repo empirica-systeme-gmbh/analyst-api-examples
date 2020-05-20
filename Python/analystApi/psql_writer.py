@@ -22,7 +22,16 @@ psql -c 'CREATE TABLE {tablename}
 {column_lines}
 )'
 
+# CSV einlesen..
 psql -c "\\copy {tablename} from {filename} delimiter ',' csv header;"
+
+# Georef anreichern...
+psql -c "INSERT INTO georef SELECT "ID","Adresse",
+                                    (query::json->'peripherySpatialFilter'->'coordinate'->'lat')::text::numeric oadr_koord_lat_epsg4326,
+                                    (query::json->'peripherySpatialFilter'->'coordinate'->'lon')::text::numeric oadr_koord_lon_epsg4326 
+                                    FROM {tablename} WHERE precision='HOUSE'
+                                    ON CONFLICT DO NOTHING"
+                                    
 """
     return lines
 
