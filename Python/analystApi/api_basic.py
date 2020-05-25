@@ -20,6 +20,7 @@ json_headers = {
 column_documentation = {}
 
 
+# noinspection PyPep8Naming
 class immobrain_search_query:
     session = requests.Session()
 
@@ -61,20 +62,23 @@ class immobrain_search_query:
             # fl_wohnen::von // fl_wohnen::bis
             column = column.split('::')[0].lower()
             return get_filter(column_documentation[column]['filterModelName'])
-        except:
+        except BaseException as be:
+            logging.exception(be)
             pass
         return None
 
     def get_precision(self):
         try:
             return self.filter['Adresse'].precision
-        except:
+        except BaseException as be:
+            logging.exception(be)
             return None
 
     def get_distance_used(self):
         try:
             return self.details['peripherySpatialFilter']['distance']
-        except:
+        except BaseException as be:
+            logging.exception(be)
             return None
 
     def generate_id(self):
@@ -207,6 +211,7 @@ def get_filter(filter_name):
     return available_filters[filter_name]
 
 
+# noinspection PyPep8Naming
 class immobrain_filter:
     def __init__(self):
         self.known_special_keys = []
@@ -215,15 +220,6 @@ class immobrain_filter:
     @staticmethod
     def get_sql_type():
         raise NotImplementedError("get_sql_type Not Implemented")
-
-    def set_min(self, value):
-        raise NotImplementedError("set_min Not Implemented")
-
-    def set_max(self, value):
-        raise NotImplementedError("set_max Not Implemented")
-
-    def set_value(self, value):
-        raise NotImplementedError("set_values Not Implemented")
 
     def to_query(self):
         raise NotImplementedError("to_query Not Implemented")
@@ -240,6 +236,7 @@ class immobrain_filter:
         self.special_keys[key] = value
 
 
+# noinspection PyPep8Naming
 class segmentFilter(immobrain_filter):
     def __init__(self, column_name):
         super().__init__()
@@ -299,7 +296,8 @@ class BooleanFilter(immobrain_filter):
     def get_sql_type():
         return 'boolean'
 
-    def to_bool(self, value):
+    @staticmethod
+    def to_bool(value):
         """ Mimmic Java.lang.boolean """
         true = ['true', '1']
         false = ['false', '0']
@@ -321,6 +319,7 @@ class BooleanFilter(immobrain_filter):
         return doc
 
 
+# noinspection PyPep8Naming
 class rangeFilter(immobrain_filter):
     def __init__(self, column_name):
         super().__init__()
@@ -335,21 +334,18 @@ class rangeFilter(immobrain_filter):
     def get_sql_type():
         return 'numeric'
 
-    def sanitize(self, number):
+    @staticmethod
+    def sanitize(number):
         # lets assume min/max are numbers.
         # in this case we want to force a common format.
         # If we push XX,X, errors orror. Lets replace ',' with '.'
-        try:
-            return number.replace(',', '.')
-        except:
-            pass
-        return number
+        return number.replace(',', '.')
 
-    def set_min(self, min):
-        self.min = self.sanitize(min)
+    def set_min(self, min_):
+        self.min = self.sanitize(min_)
 
-    def set_max(self, max):
-        self.max = self.sanitize(max)
+    def set_max(self, max_):
+        self.max = self.sanitize(max_)
 
     def set_value(self, value):
         self.min = float(value) - 2
@@ -361,7 +357,7 @@ class rangeFilter(immobrain_filter):
             "includeUnknown": include_unknown_default
         }
         if (self.min is not None and self.max is not None) and (float(self.min) > float(self.max)):
-            raise Exception("%s has min bigger than max!" % (self.filter_name))
+            raise Exception("%s has min bigger than max!" % self.filter_name)
         if self.min is not None:
             doc["minValue"] = self.min
         if self.max is not None:
@@ -370,6 +366,7 @@ class rangeFilter(immobrain_filter):
         return doc
 
 
+# noinspection PyPep8Naming
 class rangeDateFilter(immobrain_filter):
     def __init__(self, column_name):
         super().__init__()
@@ -406,6 +403,7 @@ class rangeDateFilter(immobrain_filter):
         return doc
 
 
+# noinspection PyPep8Naming
 class timePeriodFilter(immobrain_filter):
     def __init__(self, column_name):
         super().__init__()
@@ -436,6 +434,7 @@ class timePeriodFilter(immobrain_filter):
         return doc
 
 
+# noinspection PyPep8Naming
 class peripherySpatialFilter(immobrain_filter):
     def __init__(self, column_name):
         super().__init__()
@@ -453,6 +452,12 @@ class peripherySpatialFilter(immobrain_filter):
         self.special_keys = {"distance": .2}  # default
         self.known_error = None
 
+        self.adresse = None
+
+    @staticmethod
+    def get_sql_type():
+        return 'geometry'
+
     def set_value(self, value):
         self.adresse = value
         self.get_position()
@@ -463,20 +468,15 @@ class peripherySpatialFilter(immobrain_filter):
                                                auth=(username, password),
                                                params={"address": self.adresse},
                                                headers=json_headers)
-        try:
-            response = clean_response(r)
+        response = clean_response(r)
 
-            self.lat = response["lat"]
-            self.lon = response["lon"]
-            self.precision = response["precision"]
-            self.displayName = response["displayNameDE"]
-            self.biggerArea = response["biggerArea"]
-
-        except Exception as e:
-            raise e
+        self.lat = response["lat"]
+        self.lon = response["lon"]
+        self.precision = response["precision"]
+        self.displayName = response["displayNameDE"]
+        self.biggerArea = response["biggerArea"]
 
     def to_query(self):
-
         if not self.lon and not self.lat:
             # No valid GeoRef..
             raise Exception("Address failed to georef: %s" % self.adresse)
