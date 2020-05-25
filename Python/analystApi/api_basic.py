@@ -23,11 +23,11 @@ column_documentation = {}
 class immobrain_search_query:
     session = requests.Session()
 
-    def __init__(self, id=None):
-        if id == '':
+    def __init__(self, id_=None):
+        if id_ == '':
             self.id = None
         else:
-            self.id = id
+            self.id = id_
 
         self.filter = {}
         self.meta_data = None
@@ -100,25 +100,25 @@ class immobrain_search_query:
         if r.status_code >= 400:
             raise Exception(self.details["error"])
 
-    def collect(self, type):
+    def collect(self, type_):
         if not self.id:
             self.generate_id()
         logging.info("Querying: %s" % self.id)
-        r = immobrain_search_query.session.get(endpoint + '/results/%s/%s' % (self.id, type),
+        r = immobrain_search_query.session.get(endpoint + '/results/%s/%s' % (self.id, type_),
                                                auth=(username, password),
                                                headers=json_headers)
         r.encoding = 'utf-8'
         if r.status_code < 300:
             if 'value' not in json.loads(r.text):
-                raise Exception("There is no Reply-Value for %s/%s" % (self.id, type))
-            self.data[type] = json.loads(r.text)['value']
+                raise Exception("There is no Reply-Value for %s/%s" % (self.id, type_))
+            self.data[type_] = json.loads(r.text)['value']
         else:
             if not self.meta_data:
                 logging.warning("QueryID invalid. CSV outdated? Regenerating ID %s .." %
                                 self.id)
                 self.generate_id()
                 logging.info("New Query-ID = %s" % self.id)
-                self.collect(type)
+                self.collect(type_)
             # raise Exception(self.data)
 
     def to_query(self):
@@ -129,8 +129,8 @@ class immobrain_search_query:
                 doc[self.filter[filter_name].name] = self.filter[filter_name].to_query()
         # Multiple-Filters.. Toto: Make maintainable
         non_unique_filters = {}
-        for filter in self.filter:
-            filter_object = self.filter[filter]
+        for filter_ in self.filter:
+            filter_object = self.filter[filter_]
             if not filter_object.unique:
                 if filter_object.name in non_unique_filters:
                     non_unique_filters[filter_object.name].append(
@@ -141,8 +141,8 @@ class immobrain_search_query:
                         filter_object)
         for filter_type in non_unique_filters:
             doc[filter_type] = []
-            for filter in non_unique_filters[filter_type]:
-                doc[filter_type].append(filter.to_query())
+            for filter_ in non_unique_filters[filter_type]:
+                doc[filter_type].append(filter_.to_query())
         return doc
 
     def add_filter(self, column):
@@ -150,12 +150,12 @@ class immobrain_search_query:
         if column in self.filter:
             return
 
-        filter = self.get_filter_for_column(column)
-        if not filter:
+        filter_ = self.get_filter_for_column(column)
+        if not filter_:
             raise Exception(
                 "Column '%s' is not a valid Filtercolumn" % column)
 
-        self.filter[column] = filter(column)
+        self.filter[column] = filter_(column)
 
     def add_column(self, column, value):
         logging.debug("##" + str(column))
@@ -384,11 +384,11 @@ class rangeDateFilter(immobrain_filter):
     def get_sql_type():
         return 'date'
 
-    def set_min(self, min):
-        self.min = min
+    def set_min(self, min_):
+        self.min = min_
 
-    def set_max(self, max):
-        self.max = max
+    def set_max(self, max_):
+        self.max = max_
 
     def set_value(self, value):
         self.min = float(value) - 2
@@ -420,11 +420,11 @@ class timePeriodFilter(immobrain_filter):
     def get_sql_type():
         return 'date'
 
-    def set_min(self, min):
-        self.min = min
+    def set_min(self, min_):
+        self.min = min_
 
-    def set_max(self, max):
-        self.max = max
+    def set_max(self, max_):
+        self.max = max_
 
     def to_query(self):
         doc = {}

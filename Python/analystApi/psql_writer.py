@@ -26,7 +26,7 @@ psql -c 'CREATE TABLE {tablename}
 psql -c "\\copy {tablename} from {filename} delimiter ',' csv header;"
 
 # Georef anreichern...
-psql -c "INSERT INTO georef SELECT "ID","Adresse",
+psql -c "INSERT INTO georef SELECT id,adresse,
                                     (query::json->'peripherySpatialFilter'->'coordinate'->'lat')::text::numeric oadr_koord_lat_epsg4326,
                                     (query::json->'peripherySpatialFilter'->'coordinate'->'lon')::text::numeric oadr_koord_lon_epsg4326 
                                     FROM {tablename} WHERE precision='HOUSE'
