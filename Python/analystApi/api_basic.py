@@ -74,11 +74,14 @@ class immobrain_search_query:
             logging.exception(be)
             return None
 
+    # Welche Distanz wurde bei eier Umkreissuche verwendet.
     def get_distance_used(self):
         try:
+            if self.details is None or self.details['peripherySpatialFilter'] is None:
+                return None
             return self.details['peripherySpatialFilter']['distance']
-        except BaseException as be:
-            logging.exception(be)
+        except BaseException:
+            logging.exception("Georef failed", exc_info=True)
             return None
 
     def generate_id(self):
