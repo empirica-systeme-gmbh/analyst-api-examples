@@ -74,7 +74,7 @@ class immobrain_search_query:
             logging.exception(be)
             return None
 
-    # Welche Distanz wurde bei eier Umkreissuche verwendet.
+    # Welche Distanz wurde bei der Umkreissuche verwendet.
     def get_distance_used(self):
         try:
             if self.details is None or self.details['peripherySpatialFilter'] is None:
