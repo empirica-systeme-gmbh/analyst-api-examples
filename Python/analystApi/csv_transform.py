@@ -20,6 +20,7 @@ from os.path import expanduser
 from analystApi import api_basic, psql_writer
 
 brokenColumns = []
+DEFAULT_CLIENT_WORKERS = 4
 
 
 def execute_query_per_csv_line(args):
@@ -185,18 +186,19 @@ An empty template has been created.
     # Refactoring might move there variables into one of the contained classes
     # but for now it seems more appropriate to provide a 'global' configuration in
     # the context of a scripts execution.
-    api_basic.username = config.get('global', 'username')
-    api_basic.password = config.get('global', 'password')
+    global_config = config['global']
+    api_basic.username = global_config.get('username')
+    api_basic.password = global_config.get('password')
     csv_file = args.csvfile
-    api_basic.endpoint = config.get('global', 'endpoint')
-    client_workers = int(config.get('global', 'client_workers'))
+    api_basic.endpoint = global_config.get('endpoint')
+    client_workers = global_config.getint('client_workers', DEFAULT_CLIENT_WORKERS)
 
     logging.info("Using API at " + api_basic.endpoint)
 
     api_basic.include_unknown_default = False
-    if config.get('global', 'include_unknown'):
+    if global_config.get('include_unknown'):
         logging.info("Default_Value for Unknown-Values Set")
-        api_basic.include_unknown_default = config.get('global', 'include_unknown')
+        api_basic.include_unknown_default = global_config.getboolean('include_unknown')
 
     values_to_add = config.get('global', 'values_to_add').split(' ')
 
