@@ -2,3 +2,5 @@
 /Python/Adressen_Demo_executed.csv
 /analyst-api-examples.iml
 Python/analystApi/__pycache__/
+/Python/build/
+/Python/dist/
