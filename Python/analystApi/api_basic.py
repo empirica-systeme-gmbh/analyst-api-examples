@@ -54,6 +54,8 @@ class immobrain_search_query:
     def get_filter_for_column(column):
         if column.lower() == 'id':
             return None
+        if column.lower() == 'kommentar':
+            return None
         if column.lower() == 'adresse':
             return get_filter('peripherySpatialFilter')
         if column.lower() == 'segment':
