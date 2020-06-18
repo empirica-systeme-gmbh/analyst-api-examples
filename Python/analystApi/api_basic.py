@@ -7,8 +7,11 @@
 
 import json
 import logging
+from json.decoder import JSONDecodeError
 
 import requests
+
+from analystApi.exceptions import *
 
 username = ''
 password = ''
@@ -48,7 +51,13 @@ class immobrain_search_query:
                                                headers=json_headers)
         r.encoding = 'utf-8'
         if r.status_code >= 300:
-            raise Exception(json.loads(r.text)['error'])
+            try:
+                error = json.loads(r.text)['error']
+            except JSONDecodeError as jde:
+                raise Exception(f'Error loading variable documentation, status code: {r.status_code}\n'
+                                f'Invalid JSON received: "{r.text[:80]}\"...', jde)
+            raise Exception(f'Error loading variable documentation, error message from server was: {error}')
+
         # Iterate over every possible variable
         for item in json.loads(r.text)['vars']:
             column_documentation[item['key']] = item
@@ -98,7 +107,7 @@ class immobrain_search_query:
         logging.debug(r.text)
         self.meta_data = json.loads(r.text)
         if r.status_code >= 400:
-            raise Exception(self.meta_data["error"])
+            raise create_exception_from_response(r, self.meta_data["error"])
         self.id = self.meta_data['queryId']
         self.pull_details_for_query()
 
@@ -110,7 +119,7 @@ class immobrain_search_query:
         logging.debug(r.text)
         self.details = json.loads(r.text)
         if r.status_code >= 400:
-            raise Exception(self.details["error"])
+            raise create_exception_from_response(r, self.details["error"])
 
     def collect(self, type_):
         if not self.id:
@@ -217,6 +226,20 @@ def get_filter(filter_name):
         "booleanFilter": BooleanFilter
     }
     return available_filters[filter_name]
+
+
+def create_exception_from_response(response: requests.Response, message: str):
+    status = response.status_code
+    if status == 400:
+        return MissingOrInvalidParameter(message)
+    elif status == 403:
+        return AccessDenied(message)
+    elif status == 404:
+        return SegmentNotFoundInLicense(message)
+    elif status == 429:
+        return QueryLimitReached(message)
+    else:
+        return Exception(message)
 
 
 # noinspection PyPep8Naming

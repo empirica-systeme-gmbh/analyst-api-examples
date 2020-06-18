@@ -21,6 +21,7 @@ from concurrent.futures import ThreadPoolExecutor
 from os.path import expanduser
 
 from analystApi import api_basic, psql_writer
+from analystApi.exceptions import AnalystApiError
 
 brokenColumns = []
 DEFAULT_CLIENT_WORKERS = 4
@@ -72,7 +73,7 @@ def execute_query_per_csv_line(args):
                 if "count" in isq.data and isq.data['count'] <= 0:
                     continue
 
-                isq.collect(value)
+                call_with_retries(3, 3600, 10, isq.collect, value)
             except Exception as e:
                 logging.warning(str(e))
                 collected_errormessages.append(str(e))
@@ -115,6 +116,30 @@ def execute_query_per_csv_line(args):
             sys.exit()
 
         logging.exception("Unexpected Exception")
+
+
+def call_with_retries(max_retry_count, max_retry_time, delay, func, *args):
+    retry_count = 0
+    start_time = time.time()
+    lasterror = ''
+    while True:
+        elapsed_time = time.time() - start_time
+        if retry_count >= max_retry_count or elapsed_time >= max_retry_time:
+            raise Exception(f'Failed to call "{func}" in {retry_count} tries in {elapsed_time} seconds. '
+                            f'Last error appended.', lasterror)
+        # if this is not the first try, sleep before next retry
+        if retry_count > 0:
+            time.sleep(delay)
+        try:
+            return func(*args)
+        # Pass on usage errors of the API
+        except AnalystApiError as e:
+            raise
+        # Retry for other errors like timeout, etc.
+        except Exception as e:
+            lasterror = e
+        finally:
+            retry_count += 1
 
 
 def main():
