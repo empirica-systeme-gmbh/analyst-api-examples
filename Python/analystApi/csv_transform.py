@@ -39,6 +39,7 @@ def execute_query_per_csv_line(args):
         be_silent: bool = args[3]
 
         collected_errormessages = []
+        entry_id: str = 'NONE'
 
         # Each Input-Line is a Query. Instanciate accordingly
         isq = api_basic.immobrain_search_query()
@@ -50,6 +51,9 @@ def execute_query_per_csv_line(args):
         for column_name in line.copy():
             if column_name in brokenColumns:
                 continue
+
+            if column_name.lower() == 'id':
+                entry_id = line[column_name].strip()
 
             if column_name.lower() in ['id', 'kommentar', 'comment']:
                 # Let's not complain about comments and ID being invalid filters.
@@ -63,8 +67,8 @@ def execute_query_per_csv_line(args):
                     continue
 
                 brokenColumns.append(column_name)
-                logging.warning("Could not add column %s" % column_name)
-                logging.warning(str(e))
+                logging.warning(f"{entry_id}: Could not add column {column_name}")
+                logging.warning(f"{entry_id}: {str(e)}")
 
         # Execute Querys and collect values as required.
         for value in values_to_add:
@@ -75,7 +79,7 @@ def execute_query_per_csv_line(args):
 
                 call_with_retries(MAX_RETRY_COUNT, MAX_RETRY_TIME, RETRY_DELAY, isq.collect, value)
             except Exception as e:
-                logging.warning(str(e))
+                logging.warning(f"{entry_id}: {str(e)}")
                 collected_errormessages.append(str(e))
 
                 # There is little reason to continue. It _might_ yield results
@@ -152,7 +156,9 @@ def main():
         be_silent = False
 
     logging.basicConfig(
-        level=target_loglevel)
+        level=target_loglevel,
+        format='%(asctime)-15s %(levelname)-8s %(message)s'
+    )
 
     logging.info("Starting.. ")
     # Load our configuation-file. Complain and exit if this fails.
