@@ -211,7 +211,6 @@ An empty template has been created.
     api_basic.endpoint = global_config.get('endpoint')
     client_workers = global_config.getint('client_workers', DEFAULT_CLIENT_WORKERS)
 
-
     logging.info("Using API at " + api_basic.endpoint)
 
     api_basic.include_unknown_default = False
@@ -268,7 +267,8 @@ An empty template has been created.
         # actually collect things
         executor.shutdown(wait=True)
 
-    logging.debug("Done")
+    logging.info("Done")
+    print('Script completed, see output/log for any errors')
 
 
 def chained(sequences):
