@@ -221,7 +221,7 @@ class immobrain_search_query:
 def call_with_retries(max_retry_count, max_retry_time, delay, func, *args):
     retry_count = 0
     start_time = time.time()
-    lasterror = ''
+    lasterror: Exception
     while True:
         elapsed_time = time.time() - start_time
         if retry_count >= max_retry_count or elapsed_time >= max_retry_time:
@@ -229,8 +229,8 @@ def call_with_retries(max_retry_count, max_retry_time, delay, func, *args):
                             f'Last error appended.', lasterror)
         # if this is not the first try, sleep before next retry
         if retry_count > 0:
-            logging.warning(f'Exception "{lasterror.__name__}" was raised in function "{func.__name__}", '
-                            f'retrying in {delay} secs')
+            logging.warning(f'Exception "{type(lasterror).__name__}" was raised in function "{func.__name__}", '
+                            f'retrying in {delay} secs, exception was {lasterror}')
             time.sleep(delay)
             logging.warning(f'Retrying call to function "{func.__name__}"')
         try:
