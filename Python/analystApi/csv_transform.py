@@ -1,5 +1,8 @@
-# Python script to query REST-API from empirica-systeme, see https://www.empirica-systeme.de/en/portfolio/empirica-systeme-rest-api/
-# This work is licensed under a "Creative Commons Attribution 4.0 International License", sett http://creativecommons.org/licenses/by/4.0/
+# Python script to query REST-API from empirica-systeme, see
+# https://www.empirica-systeme.de/en/portfolio/empirica-systeme-rest-api/
+# This work is licensed under a "Creative Commons Attribution 4.0 International License", see
+# http://creativecommons.org/licenses/by/4.0/
+#
 # Documentation of REST-API at https://api.empirica-systeme.de/api-docs/
 
 import argparse
@@ -18,8 +21,10 @@ from concurrent.futures import ThreadPoolExecutor
 from os.path import expanduser
 
 from analystApi import api_basic, psql_writer
+from analystApi.api_basic import call_with_retries, MAX_RETRY_COUNT, MAX_RETRY_TIME, RETRY_DELAY
 
 brokenColumns = []
+DEFAULT_CLIENT_WORKERS = 4
 
 
 def execute_query_per_csv_line(args):
@@ -31,6 +36,7 @@ def execute_query_per_csv_line(args):
         line: OrderedDict = args[0]
         values_to_add: OrderedDict = args[1]
         csv_writer: csv.DictWriter = args[2]
+        be_silent: bool = args[3]
 
         collected_errormessages = []
 
@@ -67,7 +73,7 @@ def execute_query_per_csv_line(args):
                 if "count" in isq.data and isq.data['count'] <= 0:
                     continue
 
-                isq.collect(value)
+                call_with_retries(MAX_RETRY_COUNT, MAX_RETRY_TIME, RETRY_DELAY, isq.collect, value)
             except Exception as e:
                 logging.warning(str(e))
                 collected_errormessages.append(str(e))
@@ -99,8 +105,9 @@ def execute_query_per_csv_line(args):
         csv_writer.writerow(output_row)
 
         # Regardless of logging, this is expected output:
-        print(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
-                                     'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
+        if not be_silent:
+            print(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
+                                         'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
 
     except Exception as e:
 
@@ -119,6 +126,7 @@ def main():
         'csvfile', help='The CSV to load. Output will have an _executed-suffix')
 
     # It is not verbose, unless ticked
+    parser.add_argument('-s', '--silent', help='Don\'t print result for each query', action='store_true')
     parser.add_argument('-v', '--verbose', help='Turn to a nice verbosity', action='store_true')
     parser.add_argument('-V', '--veryverbose', help='Turn to maximum verbosity', action='store_true')
     parser.add_argument(
@@ -137,6 +145,11 @@ def main():
         target_loglevel = logging.INFO
     else:
         target_loglevel = logging.WARN
+
+    if args.silent:
+        be_silent = True
+    else:
+        be_silent = False
 
     logging.basicConfig(
         level=target_loglevel)
@@ -185,18 +198,19 @@ An empty template has been created.
     # Refactoring might move there variables into one of the contained classes
     # but for now it seems more appropriate to provide a 'global' configuration in
     # the context of a scripts execution.
-    api_basic.username = config.get('global', 'username')
-    api_basic.password = config.get('global', 'password')
+    global_config = config['global']
+    api_basic.username = global_config.get('username')
+    api_basic.password = global_config.get('password')
     csv_file = args.csvfile
-    api_basic.endpoint = config.get('global', 'endpoint')
-    client_workers = int(config.get('global', 'client_workers'))
+    api_basic.endpoint = global_config.get('endpoint')
+    client_workers = global_config.getint('client_workers', DEFAULT_CLIENT_WORKERS)
 
     logging.info("Using API at " + api_basic.endpoint)
 
     api_basic.include_unknown_default = False
-    if config.get('global', 'include_unknown'):
+    if global_config.get('include_unknown'):
         logging.info("Default_Value for Unknown-Values Set")
-        api_basic.include_unknown_default = config.get('global', 'include_unknown')
+        api_basic.include_unknown_default = global_config.getboolean('include_unknown')
 
     values_to_add = config.get('global', 'values_to_add').split(' ')
 
@@ -238,7 +252,7 @@ An empty template has been created.
         if client_workers > 1:
             print("Using %s clients..." % client_workers)
         with ThreadPoolExecutor(max_workers=client_workers) as executor:
-            tasks = [(line, values_to_add, csv_writer) for line in csv_entrys]
+            tasks = [(line, values_to_add, csv_writer, be_silent) for line in csv_entrys]
             executor.map(execute_query_per_csv_line, tasks)
 
         # actually collect things

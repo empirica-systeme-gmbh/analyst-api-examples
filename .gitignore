@@ -3,3 +3,5 @@
 /analyst-api-examples.iml
 Python/analystApi/__pycache__/
 /Python/test_executed.psql
+/Python/build/
+/Python/dist/

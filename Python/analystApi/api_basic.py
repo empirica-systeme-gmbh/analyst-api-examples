@@ -1,11 +1,22 @@
-# Python script to query REST-API from empirica-systeme, see https://www.empirica-systeme.de/en/portfolio/empirica-systeme-rest-api/
-# This work is licensed under a "Creative Commons Attribution 4.0 International License", sett http://creativecommons.org/licenses/by/4.0/
+# Python script to query REST-API from empirica-systeme, see
+# https://www.empirica-systeme.de/en/portfolio/empirica-systeme-rest-api/
+# This work is licensed under a "Creative Commons Attribution 4.0 International License", see
+# http://creativecommons.org/licenses/by/4.0/
+
 # Documentation of REST-API at https://api.empirica-systeme.de/api-docs/
 
 import json
 import logging
+import time
+from json.decoder import JSONDecodeError
 
 import requests
+
+from analystApi.exceptions import *
+
+MAX_RETRY_COUNT = 3
+MAX_RETRY_TIME = 10
+RETRY_DELAY = 3
 
 username = ''
 password = ''
@@ -45,7 +56,13 @@ class immobrain_search_query:
                                                headers=json_headers)
         r.encoding = 'utf-8'
         if r.status_code >= 300:
-            raise Exception(json.loads(r.text)['error'])
+            try:
+                error = json.loads(r.text)['error']
+            except JSONDecodeError as jde:
+                raise Exception(f'Error loading variable documentation, status code: {r.status_code}\n'
+                                f'Invalid JSON received: "{r.text[:80]}\"...', jde)
+            raise Exception(f'Error loading variable documentation, error message from server was: {error}')
+
         # Iterate over every possible variable
         for item in json.loads(r.text)['vars']:
             column_documentation[item['key']] = item
@@ -53,6 +70,8 @@ class immobrain_search_query:
     @staticmethod
     def get_filter_for_column(column):
         if column.lower() == 'id':
+            return None
+        if column.lower() == 'kommentar':
             return None
         if column.lower() == 'adresse':
             return get_filter('peripherySpatialFilter')
@@ -94,7 +113,7 @@ class immobrain_search_query:
         logging.debug(r.text)
         self.meta_data = json.loads(r.text)
         if r.status_code >= 400:
-            raise Exception(self.meta_data["error"])
+            raise create_query_exception_from_response(r, self.meta_data["error"])
         self.id = self.meta_data['queryId']
         self.pull_details_for_query()
 
@@ -106,7 +125,7 @@ class immobrain_search_query:
         logging.debug(r.text)
         self.details = json.loads(r.text)
         if r.status_code >= 400:
-            raise Exception(self.details["error"])
+            raise create_query_exception_from_response(r, self.details["error"])
 
     def collect(self, type_):
         if not self.id:
@@ -191,13 +210,40 @@ class immobrain_search_query:
             self.filter[coltype].set_value(value)
 
 
+def call_with_retries(max_retry_count, max_retry_time, delay, func, *args):
+    retry_count = 0
+    start_time = time.time()
+    lasterror = ''
+    while True:
+        elapsed_time = time.time() - start_time
+        if retry_count >= max_retry_count or elapsed_time >= max_retry_time:
+            raise Exception(f'Failed to call "{func}" in {retry_count} tries in {elapsed_time} seconds. '
+                            f'Last error appended.', lasterror)
+        # if this is not the first try, sleep before next retry
+        if retry_count > 0:
+            time.sleep(delay)
+        try:
+            return func(*args)
+        # Pass on usage errors of the Analyst API, except a few
+        except AnalystApiError as e:
+            if e is GeorefOffline:
+                lasterror = e
+            else:
+                raise
+        # Retry for other errors like timeout, etc.
+        except Exception as e:
+            lasterror = e
+        finally:
+            retry_count += 1
+
+
 def clean_response(response):
     response.encoding = 'utf-8'
     body_as_json = json.loads(response.text)
     if response.status_code < 300:
         return body_as_json
     else:
-        raise Exception(body_as_json['error'])
+        raise create_georef_exception_from_response(response, body_as_json['error'])
 
 
 def get_filter(filter_name):
@@ -213,6 +259,36 @@ def get_filter(filter_name):
         "booleanFilter": BooleanFilter
     }
     return available_filters[filter_name]
+
+
+def create_georef_exception_from_response(response: requests.Response, message: str):
+    status = response.status_code
+    if status == 400:
+        return GeorefAddressInvalid(message)
+    elif status == 403:
+        return GeorefAccessDenied(message)
+    elif status == 404:
+        return GeorefNotFound(message)
+    elif status == 409:
+        return GeorefMultipleFound(message)
+    elif status == 503:
+        return GeorefOffline(message)
+    else:
+        return Exception(message)
+
+
+def create_query_exception_from_response(response: requests.Response, message: str):
+    status = response.status_code
+    if status == 400:
+        return QueryMissingOrInvalidParameter(message)
+    elif status == 403:
+        return QueryAccessDenied(message)
+    elif status == 404:
+        return QuerySegmentNotFoundInLicense(message)
+    elif status == 429:
+        return QueryLimitReached(message)
+    else:
+        return Exception(message)
 
 
 # noinspection PyPep8Naming
@@ -465,7 +541,7 @@ class peripherySpatialFilter(immobrain_filter):
 
     def set_value(self, value):
         self.adresse = value
-        self.get_position()
+        call_with_retries(MAX_RETRY_COUNT, MAX_RETRY_TIME, RETRY_DELAY, self.get_position)
 
     def get_position(self):
         logging.debug("Pulling Position for %s" % (self.adresse,))
@@ -484,7 +560,7 @@ class peripherySpatialFilter(immobrain_filter):
     def to_query(self):
         if not self.lon and not self.lat:
             # No valid GeoRef..
-            raise Exception("Address failed to georef: %s" % self.adresse)
+            raise AnalystApiGeorefError("Address failed to georef: %s" % self.adresse)
         doc = {
             "coordinate": {
                 "lat": self.lat,
