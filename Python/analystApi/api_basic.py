@@ -16,9 +16,9 @@ from requests.adapters import HTTPAdapter
 
 from analystApi.exceptions import *
 
-MAX_RETRY_COUNT = 3
-MAX_RETRY_TIME = 10
-RETRY_DELAY = 3
+MAX_RETRY_COUNT = 100
+MAX_RETRY_TIME = 3600   # 1 hour
+RETRY_DELAY = 300       # 5 minutes
 
 username = ''
 password = ''
