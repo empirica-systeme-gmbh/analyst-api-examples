@@ -229,11 +229,10 @@ def call_with_retries(max_retry_count, max_retry_time, delay, func, *args):
                             f'Last error appended.', lasterror)
         # if this is not the first try, sleep before next retry
         if retry_count > 0:
-            logging.info(f'Exception "{e.__name__}" was raised in function "{func.__name__}", retrying in {delay} secs')
-            # print(f'Exception "{e.__name__}" was raised in function "{func.__name__}", retrying in {delay} secs')
+            logging.warning(f'Exception "{lasterror.__name__}" was raised in function "{func.__name__}", '
+                            f'retrying in {delay} secs')
             time.sleep(delay)
-            logging.info(f'Retrying call to function "{func.__name__}"')
-            # print(f'Retrying call to function "{func.__name__}"')
+            logging.warning(f'Retrying call to function "{func.__name__}"')
         try:
             return func(*args)
         # Pass on usage errors of the Analyst API, except a few
