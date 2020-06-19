@@ -205,6 +205,7 @@ An empty template has been created.
     api_basic.endpoint = global_config.get('endpoint')
     client_workers = global_config.getint('client_workers', DEFAULT_CLIENT_WORKERS)
 
+
     logging.info("Using API at " + api_basic.endpoint)
 
     api_basic.include_unknown_default = False
@@ -251,6 +252,9 @@ An empty template has been created.
             client_workers = 29
         if client_workers > 1:
             print("Using %s clients..." % client_workers)
+
+        api_basic.poolsize=client_workers
+
         with ThreadPoolExecutor(max_workers=client_workers) as executor:
             tasks = [(line, values_to_add, csv_writer, be_silent) for line in csv_entrys]
             executor.map(execute_query_per_csv_line, tasks)

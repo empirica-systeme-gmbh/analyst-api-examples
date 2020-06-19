@@ -8,9 +8,11 @@
 import json
 import logging
 import time
+from collections import OrderedDict
 from json.decoder import JSONDecodeError
 
 import requests
+from requests.adapters import HTTPAdapter
 
 from analystApi.exceptions import *
 
@@ -22,6 +24,7 @@ username = ''
 password = ''
 endpoint = ''
 include_unknown_default = False
+poolsize = 2
 
 json_headers = {
     "Content-Type": "application/json",
@@ -34,6 +37,9 @@ column_documentation = {}
 # noinspection PyPep8Naming
 class immobrain_search_query:
     session = requests.Session()
+    session.adapters = OrderedDict()
+    session.mount('https://', HTTPAdapter(pool_maxsize=poolsize,  pool_block=True))
+    session.mount('http://', HTTPAdapter(pool_maxsize=poolsize, pool_block=True))
 
     def __init__(self, id_=None):
         if id_ == '':
@@ -51,6 +57,8 @@ class immobrain_search_query:
 
     @staticmethod
     def load_variable_documentation():
+
+        # ... making concurrent requests from multiple threads using the same Session.
         r = immobrain_search_query.session.get(endpoint + '/vars/',
                                                auth=(username, password),
                                                headers=json_headers)
