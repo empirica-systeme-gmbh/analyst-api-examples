@@ -1,5 +1,5 @@
-ID,Adresse,Segment,fl_wohnen::von,fl_wohnen::bis,baujahr,fl_gewerbe,kommentar,Adresse::minCount,--RESULTS--,QUERY-ID,distance_used,precision,query,count,/aggregated/kosten_je_flaeche/MEDIAN,/aggregated/kosten_je_flaeche/AVG,/aggregated/kosten_je_flaeche/AVGFG,/aggregated/kosten/MEDIAN
-POO-2321S,"Einsteinufer 63a, 10587, Berlin",WHG_M,190,200,1920,,"-> fl_wohnen von190 bis 200, baujahr 1919 bis 1921",100,,7356331,20.0,HOUSE,"{
+ID,Adresse,Segment,fl_wohnen::von,fl_wohnen::bis,fl_wohnen::includeUNKNOWN,baujahr,fl_gewerbe,kommentar,Adresse::minCount,--RESULTS--,QUERY-ID,distance_used,precision,query,count,aggregated/kosten_je_flaeche/MEDIAN,aggregated/kosten_je_flaeche/AVG,aggregated/kosten_je_flaeche/AVGFG,aggregated/kosten/MEDIAN
+POO-2321S,"Einsteinufer 63a, 10587, Berlin",WHG_M,190,200,f,1920,,"-> fl_wohnen von190 bis 200, baujahr 1919 bis 1921; flwohnen==NULL excluded",100,,7356331,20.0,HOUSE,"{
     ""peripherySpatialFilter"": {
         ""coordinate"": {
             ""biggerArea"": ""Berlin"",
@@ -26,29 +26,8 @@ POO-2321S,"Einsteinufer 63a, 10587, Berlin",WHG_M,190,200,1920,,"-> fl_wohnen vo
         }
     ],
     ""segment"": ""WHG_M""
-}",26.0,10.13,10.54,10.55,2000.0
-OJID-DD2,"Straßburger Weg 26, 53113 Bonn",EZFH_K,200,,,,-> fl_wohnen von200 bis ende offen,100,,7356332,2.0,HOUSE,"{
-    ""peripherySpatialFilter"": {
-        ""coordinate"": {
-            ""biggerArea"": ""Bonn"",
-            ""displayName"": ""Hauskoordinate Stra\u00dfburger Weg 26 (Bonn 53113)"",
-            ""lat"": 50.7169,
-            ""lon"": 7.11624,
-            ""precision"": ""HOUSE""
-        },
-        ""distance"": 0.2,
-        ""minCount"": ""100""
-    },
-    ""rangeFilters"": [
-        {
-            ""includeUnknown"": ""false"",
-            ""minValue"": ""200"",
-            ""var"": ""fl_wohnen""
-        }
-    ],
-    ""segment"": ""EZFH_K""
-}",109.0,3177.27,3224.16,3172.26,888000.0
-JIOD-23D,"Karlstr. 3, 72072 Tübingen",GEWERBE_M,,,,100,-> soll von 99 bis 101 filtern,100,,7356333,13.0,HOUSE,"{
+}",27.0,10.13,10.38,10.38,2000.0
+JIOD-23D,"Karlstr. 3, 72072 Tübingen",GEWERBE_M,,,,,100,-> soll von 99 bis 101 filtern,100,,7356333,13.0,HOUSE,"{
     ""peripherySpatialFilter"": {
         ""coordinate"": {
             ""biggerArea"": ""T\u00fcbingen"",
@@ -69,4 +48,25 @@ JIOD-23D,"Karlstr. 3, 72072 Tübingen",GEWERBE_M,,,,100,-> soll von 99 bis 101 f
         }
     ],
     ""segment"": ""GEWERBE_M""
-}",118.0,8.0,10.14,10.05,800.0
+}",119.0,8.0,10.08,10.0,800.0
+OJID-DD2,"Straßburger Weg 26, 53113 Bonn",EZFH_K,200,,t,,,-> fl_wohnen von200 bis ende offen; flwohnen==NULL included,100,,7356332,2.0,HOUSE,"{
+    ""peripherySpatialFilter"": {
+        ""coordinate"": {
+            ""biggerArea"": ""Bonn"",
+            ""displayName"": ""Hauskoordinate Stra\u00dfburger Weg 26 (Bonn 53113)"",
+            ""lat"": 50.7169,
+            ""lon"": 7.11624,
+            ""precision"": ""HOUSE""
+        },
+        ""distance"": 0.2,
+        ""minCount"": ""100""
+    },
+    ""rangeFilters"": [
+        {
+            ""includeUnknown"": ""false"",
+            ""minValue"": ""200"",
+            ""var"": ""fl_wohnen""
+        }
+    ],
+    ""segment"": ""EZFH_K""
+}",110.0,3177.27,3233.64,3178.58,880000.0

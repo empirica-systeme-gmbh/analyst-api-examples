@@ -61,7 +61,8 @@ class immobrain_search_query:
         try:
             # fl_wohnen::von // fl_wohnen::bis
             column = column.split('::')[0].lower()
-            return get_filter(column_documentation[column]['filterModelName'])
+            if column in column_documentation.keys():
+                return get_filter(column_documentation[column]['filterModelName'])
         except BaseException as be:
             logging.exception(be)
             pass
@@ -332,6 +333,7 @@ class rangeFilter(immobrain_filter):
         self.max = None
         # Is it possible to have multiple of these in an array of filters, or is it exactly one?
         self.unique = False
+        self.known_special_keys = ["includeunknown"]
 
     @staticmethod
     def get_sql_type():

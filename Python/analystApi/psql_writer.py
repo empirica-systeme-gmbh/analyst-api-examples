@@ -60,7 +60,7 @@ def construct_column_definitions(columns, values_to_add):
 
     # Handle all columns
     while cols:
-        col = cols.pop(0)       # Remove first element
+        col: str = cols.pop(0)  # Remove first element
         if col in [k.lower() for k in basic_cols]:
             for col_name, col_type in basic_cols.items():
                 if col == col_name.lower():
@@ -71,7 +71,11 @@ def construct_column_definitions(columns, values_to_add):
             if col_filter is None:
                 col_type = 'text'
             else:
-                col_type = col_filter.get_sql_type()
+                if col.endswith('includeunknown'):
+                    col_type = 'boolean'
+                else:
+                    col_type = col_filter.get_sql_type()
+
             append_col(lines, col, col_type)
 
     lines.append('')
