@@ -48,7 +48,6 @@ def execute_query_per_csv_line(args):
         line: OrderedDict = args[0]
         values_to_add: OrderedDict = args[1]
         csv_writer: csv.DictWriter = args[2]
-        be_silent: bool = args[3]
 
         collected_errormessages = []
         entry_id: str = 'NONE'
@@ -121,9 +120,8 @@ def execute_query_per_csv_line(args):
         csv_writer.writerow(output_row)
 
         # Regardless of logging, this is expected output:
-        # if not be_silent:
-        logging.info(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
-                     'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
+        logging.debug(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
+                      'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
 
         return ExecutionResult(entry_id, isq.id, not collected_errormessages)
 
@@ -145,7 +143,6 @@ def main():
         'csvfile', help='The CSV to load. Output will have an _executed-suffix')
 
     # It is not verbose, unless ticked
-    parser.add_argument('-s', '--silent', help='Don\'t print result for each query', action='store_true')
     parser.add_argument('-v', '--verbose', help='Turn to a nice verbosity', action='store_true')
     parser.add_argument('-V', '--veryverbose', help='Turn to maximum verbosity', action='store_true')
     parser.add_argument(
@@ -164,11 +161,6 @@ def main():
         target_loglevel = logging.INFO
     else:
         target_loglevel = logging.WARN
-
-    if args.silent:
-        be_silent = True
-    else:
-        be_silent = False
 
     logging.basicConfig(
         level=target_loglevel,
@@ -224,7 +216,7 @@ An empty template has been created.
     api_basic.password = global_config.get('password')
     csv_file = args.csvfile
     api_basic.endpoint = global_config.get('endpoint')
-    client_workers = global_config.getint('client_workers', DEFAULT_CLIENT_WORKERS)
+    client_workers = global_config.getint('client_workers', fallback=DEFAULT_CLIENT_WORKERS)
 
     logging.info("Using API at " + api_basic.endpoint)
 
@@ -284,7 +276,7 @@ An empty template has been created.
         t.start()
 
         with ThreadPoolExecutor(max_workers=client_workers) as executor:
-            tasks = [(line, values_to_add, csv_writer, be_silent) for line in csv_entrys]
+            tasks = [(line, values_to_add, csv_writer) for line in csv_entrys]
             executor_map = executor.map(execute_query_per_csv_line, tasks)
             for item in executor_map:
                 if item.successful:
