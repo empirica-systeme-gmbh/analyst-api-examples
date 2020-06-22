@@ -22,9 +22,21 @@ from os.path import expanduser
 
 from analystApi import api_basic, psql_writer
 from analystApi.api_basic import call_with_retries, MAX_RETRY_COUNT, MAX_RETRY_TIME, RETRY_DELAY
+from analystApi.utils import RepeatingTimer
 
 brokenColumns = []
 DEFAULT_CLIENT_WORKERS = 4
+
+progress_num_total: int = 0
+progress_num_success: int = 0
+progress_num_fail: int = 0
+
+
+class ExecutionResult:
+    def __init__(self, object_id: str, query_id: int, successful: bool):
+        self.object_id = object_id
+        self.query_id = query_id
+        self.successful = successful
 
 
 def execute_query_per_csv_line(args):
@@ -109,9 +121,11 @@ def execute_query_per_csv_line(args):
         csv_writer.writerow(output_row)
 
         # Regardless of logging, this is expected output:
-        if not be_silent:
-            print(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
-                                         'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
+        # if not be_silent:
+        logging.info(" %s, %s => %s %s " % (line['ID'], line['Adresse'], isq.id,
+                     'OK' if not collected_errormessages else '/'.join(collected_errormessages)))
+
+        return ExecutionResult(entry_id, isq.id, not collected_errormessages)
 
     except Exception as e:
 
@@ -119,7 +133,8 @@ def execute_query_per_csv_line(args):
             logging.critical("Check your API user: must be in the role 'rest'")
             sys.exit()
 
-        logging.exception("Unexpected Exception")
+        logging.exception("Unexpected Exception", e)
+        return ExecutionResult(entry_id, isq.id, False)
 
 
 def main():
@@ -256,19 +271,41 @@ An empty template has been created.
         if client_workers > 29:
             client_workers = 29
         if client_workers > 1:
-            print("Using %s clients..." % client_workers)
+            logging.info("Using %s clients..." % client_workers)
 
-        api_basic.poolsize=client_workers
+        api_basic.poolsize = client_workers
+
+        global progress_num_total
+        global progress_num_success
+        global progress_num_fail
+        progress_num_total = len(csv_entrys)
+
+        t = RepeatingTimer(60.0, print_progress, daemon=True)
+        t.start()
 
         with ThreadPoolExecutor(max_workers=client_workers) as executor:
             tasks = [(line, values_to_add, csv_writer, be_silent) for line in csv_entrys]
-            executor.map(execute_query_per_csv_line, tasks)
+            executor_map = executor.map(execute_query_per_csv_line, tasks)
+            for item in executor_map:
+                if item.successful:
+                    progress_num_success += 1
+                else:
+                    progress_num_fail += 1
+                # print(f'{num_fail + num_success}/{num_total} - success: {num_success}, failed: {num_fail}')
+                # print(f'{item.query_id}, {item.object_id}, {item.successful}')
 
         # actually collect things
+        t.cancel()
+        t.call_function()
         executor.shutdown(wait=True)
 
     logging.info("Done")
-    print('Script completed, see output/log for any errors')
+    logging.info('Script completed, see output/log for any errors')
+
+
+def print_progress():
+    logging.info(f'Processed {progress_num_fail + progress_num_success} of {progress_num_total} entries '
+                 f'- success: {progress_num_success}, failed: {progress_num_fail}')
 
 
 def chained(sequences):
