@@ -134,7 +134,7 @@ def execute_query_per_csv_line(args):
             sys.exit()
 
         logging.exception("Unexpected Exception", e)
-        return ExecutionResult(entry_id, isq.id, False)
+        return ExecutionResult('', 0, False)
 
 
 def main():
