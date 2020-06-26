@@ -261,8 +261,8 @@ An empty template has been created.
             csv_entrys = random.sample(
                 csv_entrys, math.ceil(len(csv_entrys) * 0.01))
 
-        if client_workers > 29:
-            client_workers = 29
+        if client_workers > 39:
+            client_workers = 39
         if client_workers > 1:
             logging.info("Using %s clients..." % client_workers)
 
