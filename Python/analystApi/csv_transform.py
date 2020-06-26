@@ -218,7 +218,7 @@ An empty template has been created.
     api_basic.endpoint = global_config.get('endpoint')
     client_workers = global_config.getint('client_workers', fallback=DEFAULT_CLIENT_WORKERS)
 
-    logging.info("Using API at " + api_basic.endpoint)
+    logging.info("Using API at " + api_basic.endpoint+ " with client_workers="+client_workers)
 
     api_basic.include_unknown_default = False
     if global_config.get('include_unknown'):
