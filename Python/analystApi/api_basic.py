@@ -38,6 +38,7 @@ column_documentation = {}
 class immobrain_search_query:
     session = requests.Session()
     session.adapters = OrderedDict()
+    logging.info(f"Initialize immobrain_search_query with poolsize {poolsize}")
     session.mount('https://', HTTPAdapter(pool_maxsize=poolsize,  pool_block=True))
     session.mount('http://', HTTPAdapter(pool_maxsize=poolsize, pool_block=True))
 

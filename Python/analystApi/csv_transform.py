@@ -267,6 +267,7 @@ An empty template has been created.
             logging.info("Using %s clients..." % client_workers)
 
         api_basic.poolsize = client_workers
+        logging.info(f"Set poolsize to {api_basic.poolsize}")
 
         global progress_num_total
         global progress_num_success
