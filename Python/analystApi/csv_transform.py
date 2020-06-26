@@ -163,10 +163,9 @@ def main():
     else:
         target_loglevel = logging.WARN
 
-    logging.basicConfig(
-        level=target_loglevel,
-        format='%(asctime)-15s %(levelname)-8s %(message)s'
-    )
+    logging.getLogger().handlers.clear()
+    logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s',
+                        level=target_loglevel)
 
     logging.info("Starting.. ")
     # Load our configuation-file. Complain and exit if this fails.
@@ -219,7 +218,15 @@ An empty template has been created.
     api_basic.endpoint = global_config.get('endpoint')
     client_workers = global_config.getint('client_workers', fallback=DEFAULT_CLIENT_WORKERS)
 
-    logging.info("Using API at " + api_basic.endpoint+ " with client_workers="+client_workers)
+    if client_workers > 39:
+        client_workers = 39
+    if client_workers > 1:
+        logging.info("Using %s clients..." % client_workers)
+
+    api_basic.poolsize = client_workers
+    logging.info(f"Set poolsize to {api_basic.poolsize}")
+
+    logging.info("Using API at " + api_basic.endpoint)
 
     api_basic.include_unknown_default = False
     if global_config.get('include_unknown'):
@@ -260,14 +267,6 @@ An empty template has been created.
         if args.testonepercent:
             csv_entrys = random.sample(
                 csv_entrys, math.ceil(len(csv_entrys) * 0.01))
-
-        if client_workers > 39:
-            client_workers = 39
-        if client_workers > 1:
-            logging.info("Using %s clients..." % client_workers)
-
-        api_basic.poolsize = client_workers
-        logging.info(f"Set poolsize to {api_basic.poolsize}")
 
         global progress_num_total
         global progress_num_success
