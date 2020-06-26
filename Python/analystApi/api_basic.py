@@ -143,6 +143,8 @@ class immobrain_search_query:
                                                auth=(username, password),
                                                headers=json_headers)
         r.encoding = 'utf-8'
+        if r.elapsed.seconds > 1:
+            print(f"Query {self.id} ({r.url}) took too long: {r.elapsed.seconds} seconds")
         if r.status_code < 300:
             if 'value' not in json.loads(r.text):
                 logging.warning(f"There is no Reply-Value for {self.id}/{type_}")
