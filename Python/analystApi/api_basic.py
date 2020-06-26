@@ -38,6 +38,7 @@ column_documentation = {}
 class immobrain_search_query:
     session = requests.Session()
     session.adapters = OrderedDict()
+    logging.info(f"Initialize immobrain_search_query with poolsize {poolsize}")
     session.mount('https://', HTTPAdapter(pool_maxsize=poolsize,  pool_block=True))
     session.mount('http://', HTTPAdapter(pool_maxsize=poolsize, pool_block=True))
 
@@ -143,9 +144,12 @@ class immobrain_search_query:
                                                auth=(username, password),
                                                headers=json_headers)
         r.encoding = 'utf-8'
+        if r.elapsed.seconds > 1:
+            logging.warning(f"Query {self.id} ({r.url}) took too long: {r.elapsed.seconds} seconds")
         if r.status_code < 300:
             if 'value' not in json.loads(r.text):
-                raise Exception("There is no Reply-Value for %s/%s" % (self.id, type_))
+                logging.warning(f"There is no Reply-Value for {self.id}/{type_}")
+                return
             self.data[type_] = json.loads(r.text)['value']
         else:
             if not self.meta_data:

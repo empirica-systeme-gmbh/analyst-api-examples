@@ -86,6 +86,7 @@ def execute_query_per_csv_line(args):
             try:
                 # Wenn schon COUNT=0 rauskam, dann nichts weiter probieren...
                 if "count" in isq.data and isq.data['count'] <= 0:
+                    logging.warning(f"count is 0, überspring {value} für Eintrag {entry_id}")
                     continue
 
                 call_with_retries(MAX_RETRY_COUNT, MAX_RETRY_TIME, RETRY_DELAY, isq.collect, value)
@@ -266,6 +267,7 @@ An empty template has been created.
             logging.info("Using %s clients..." % client_workers)
 
         api_basic.poolsize = client_workers
+        logging.info(f"Set poolsize to {api_basic.poolsize}")
 
         global progress_num_total
         global progress_num_success
