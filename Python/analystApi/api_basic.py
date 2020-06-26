@@ -145,7 +145,8 @@ class immobrain_search_query:
         r.encoding = 'utf-8'
         if r.status_code < 300:
             if 'value' not in json.loads(r.text):
-                raise Exception("There is no Reply-Value for %s/%s" % (self.id, type_))
+                logging.warning(f"There is no Reply-Value for {self.id}/{type_}")
+                return
             self.data[type_] = json.loads(r.text)['value']
         else:
             if not self.meta_data:
