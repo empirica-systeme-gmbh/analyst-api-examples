@@ -22,6 +22,7 @@ from os.path import expanduser
 
 from analystApi import api_basic, psql_writer
 from analystApi.api_basic import call_with_retries, MAX_RETRY_COUNT, MAX_RETRY_TIME, RETRY_DELAY
+from analystApi.locking_dictwriter import LockingDictWriter
 from analystApi.utils import RepeatingTimer
 
 brokenColumns = []
@@ -47,7 +48,7 @@ def execute_query_per_csv_line(args):
     try:
         line: OrderedDict = args[0]
         values_to_add: OrderedDict = args[1]
-        csv_writer: csv.DictWriter = args[2]
+        csv_writer: LockingDictWriter = args[2]
 
         collected_errormessages = []
         entry_id: str = 'NONE'
@@ -252,7 +253,7 @@ An empty template has been created.
 
         psql_writer.write_to_file(output_csv_file, csv_reader.fieldnames, values_to_add)
 
-        csv_writer = csv.DictWriter(
+        csv_writer = LockingDictWriter(
             open(output_csv_file, 'w'),
             delimiter=',',
             fieldnames=fieldnames_out)
