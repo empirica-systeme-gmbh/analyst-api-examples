@@ -26,11 +26,16 @@ psql -c 'CREATE TABLE {tablename}
 psql -c "\\copy {tablename} from {filename} delimiter ',' csv header;"
 
 # Georef anreichern...
-psql -c "INSERT INTO georef SELECT id,adresse,
-                                    (query::json->'peripherySpatialFilter'->'coordinate'->'lat')::text::numeric oadr_koord_lat_epsg4326,
-                                    (query::json->'peripherySpatialFilter'->'coordinate'->'lon')::text::numeric oadr_koord_lon_epsg4326 
-                                    FROM {tablename} WHERE precision='HOUSE'
-                                    ON CONFLICT DO NOTHING"
+psql -c "INSERT INTO georef (id,adresse,oadr_koord_epsg31467)
+            SELECT id,adresse,
+	            ST_Transform(ST_SetSRID(
+					ST_Point(
+						(query::json->'peripherySpatialFilter'->'coordinate'->'lon')::text::numeric,
+						(query::json->'peripherySpatialFilter'->'coordinate'->'lat')::text::numeric)
+				,4326)
+	        ,31467)
+            FROM {tablename} WHERE precision='HOUSE'
+            ON CONFLICT DO NOTHING;"
                                     
 """
     return lines
